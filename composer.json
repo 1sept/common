@@ -27,16 +27,9 @@
     "require": {
         "php": "^7.3 || ^8"
     },
-    "require-dev": {
-    },
     "autoload": {
         "psr-4": {
             "Sept\\Common\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Sept\\OAuth2\\Client\\Test\\": "test/src/"
         }
     }
 }
