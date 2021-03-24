@@ -1,0 +1,42 @@
+{
+    "name": "1sept/common",
+    "description": "September First useful common methods",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexander Vasilyev",
+            "email": "a.vasilyev@1sept.ru"
+        },
+        {
+            "name": "Наум Соловейчик",
+            "email": "naum@1sept.ru"
+        },
+        {
+            "name": "Тимофей Соловейчик",
+            "email": "timofey@1sept.ru"
+        }
+    ],
+    "keywords": [
+        "php",
+        "general",
+        "classes",
+        "useful",
+        "common",
+        "1sept"
+    ],
+    "require": {
+        "php": "^7.3 || ^8"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Sept\\Common\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sept\\OAuth2\\Client\\Test\\": "test/src/"
+        }
+    }
+}
