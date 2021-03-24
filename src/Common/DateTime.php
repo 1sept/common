@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Common;
+namespace Sept\Common;
 
 use Parus\Exception\BadMethodCallException;
 use Parus\Exception\InvalidArgumentException;

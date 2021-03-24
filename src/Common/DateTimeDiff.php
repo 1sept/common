@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Common;
+namespace Sept\Common;
 
 /**
  * Получить данные о разнице между датами
