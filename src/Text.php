@@ -1609,7 +1609,6 @@ class Text
         // Если предан массив со значениями:
         if ($words_array)
         {
-            dump($number);
             // Количество и неразрывный пробел:
             if ($print_with_number)
                 $text = number_format(+$number, 0, "", Text::SPACE_FOUR_PER_EM) . Text::SPACE_NOBR;
