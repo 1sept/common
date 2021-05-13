@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Sept\Common;
 
-use Parus\Exception\BadMethodCallException;
-use Parus\Exception\DatabaseQueryUnexpectedResultException;
-use Parus\Exception\InvalidArgumentException;
-use Parus\Exception\OutOfBoundsException;
-use Parus\Exception\RuntimeException;
-
 /**
  * Общие статичные вспомогательные функции для работы с классами
  *
@@ -17,8 +11,6 @@ use Parus\Exception\RuntimeException;
  */
 class Data
 {
-    use StaticClassTrait;
-
     /**
      * Наименьшее значение дробного значения,
      * которое не будет конвертировано функцией floatval

@@ -1,6 +1,8 @@
 <?php
 
-namespace Parus;
+declare(strict_types=1);
+
+namespace Sept\Common;
 
 /**
  * Проверки БИК, ИНН, КПП, КС, ОГРН, ОГРНИП, РС, СНИЛС
