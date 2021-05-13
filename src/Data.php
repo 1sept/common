@@ -1267,7 +1267,7 @@ class Data
         if (!$result)
         {
             if ($validate_snils)
-                throw new RuntimeException("Не верное значение СНИЛС «{$value}»: {$error_message}!");
+                throw new \RuntimeException("Не верное значение СНИЛС «{$value}»: {$error_message}!");
 
             return null;
         }
