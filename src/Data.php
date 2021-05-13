@@ -1277,4 +1277,28 @@ class Data
 
         return $parts[0] . "-" . $parts[1] . "-" .$parts [2] . " " . $parts[3];
     }
+
+    /**
+     * Преобразовать значение из цифр в формат серии и номера Паспорта РФ: XX XX XXXXXX
+     *
+     * @param string $value
+     * @param ?bool  $validate_snils
+     * @param string &$error_message
+     * @param string &$error_code
+     *
+     * @return string|null
+     */
+    static function convertValueToPassportFormat (string $value, ?bool $validate_snils = false, &$error_message = "", &$error_code = "") : ?string
+    {
+        if (!$value)
+            return null;
+
+        $digits = preg_replace("/[^\d]/", "", $value);
+
+        preg_match("/^(\d{2})(\d{2})(\d{6})$/ux", $digits, $matches);
+        if (!$matches)
+            return $value;
+
+        return $matches[1] . " " . $matches[2] . " " .$matches [3];
+    }
 }
