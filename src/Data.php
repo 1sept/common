@@ -18,8 +18,8 @@ class Data
      *
      * Данное значение через floatval будут конвертировано в 0.0001
      *
-     * if ($val < \Parus\Data::FLOATVAL_LOWEST)
-     *     $val = floatval(\Parus\Data::FLOATVAL_LOWEST);
+     * if ($val < Data::FLOATVAL_LOWEST)
+     *     $val = floatval(Data::FLOATVAL_LOWEST);
      *
      * @var float
      */
@@ -129,8 +129,8 @@ class Data
      *
      * @return string|\string[]
      *
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public static
     function getTypes ($key = null ,$asString = false)
@@ -140,7 +140,7 @@ class Data
             $key = Text::prepareSingleLine($key ,true ,"Неверное значению ключа типа переменой, возможные варианты:" . Arrays::multiImplode(", " ,self::TYPES) . "!" ,4 ,8);
 
             if (!in_array($key ,array_keys(self::TYPES)))
-                throw new OutOfBoundsException("Нет ключа «{$key}», есть такие: " . Arrays::multiImplode(", " ,self::TYPES) . "!");
+                throw new \OutOfBoundsException("Нет ключа «{$key}», есть такие: " . Arrays::multiImplode(", " ,self::TYPES) . "!");
 
             if ($asString)
                 return $key . ": " . self::TYPES[$key];
@@ -156,15 +156,15 @@ class Data
 
 
     /**
-     * @deprecated Использовать \Parus\Text::prepareSingleLine($string)
-     * @see        \Parus\Text::prepareSingleLine()
+     * @deprecated Использовать Text::prepareSingleLine($string)
+     * @see        Text::prepareSingleLine()
      *
      * @param string $string
      *
      * @return string
      *
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     static public function getStringAsOneLine ( $string )
     {
@@ -173,8 +173,8 @@ class Data
 
 
     /**
-     * @deprecated Использовать \Parus\Text::prepare($string)
-     * @see        \Parus\Text::prepare()
+     * @deprecated Использовать Text::prepare($string)
+     * @see        Text::prepare()
      *
      * @param string   $string
      * @param bool|int $noTabs
@@ -183,8 +183,8 @@ class Data
      *
      * @return string
      *
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     static public function prepareText ($string, $noTabs = true, $removeEmptyLines = false, $trim = true)
     {
@@ -193,8 +193,8 @@ class Data
 
 
     /**
-     * @deprecated Использовать \Parus\Data::getInteger($string)
-     * @see        \Parus\Data::getInteger()
+     * @deprecated Использовать Data::getInteger($string)
+     * @see        Data::getInteger()
      *
      * @param string|int|float          $input          Переменная для проверки
      * @param boolean|string|\Exception $throwException [опция] Выбрасывать исключение с текстом, в случае неверного значения если указан текст, то он будет добавлен в тексте исключения
@@ -203,7 +203,7 @@ class Data
      * @return false|int
      *
      * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function isPositiveInteger ($input ,$throwException = false ,$max = null)
     {
@@ -220,7 +220,7 @@ class Data
      * @return false|int
      *
      * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function getInteger ($input, $throwException = true, $min = null, $max = null)
     {
@@ -253,15 +253,14 @@ class Data
      * @return int|string возвращает одно из значений переданного массива, если массив не передан, то вернёт нужный index 0,1,2
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     static public function countWordForm ( $number , $words = null , $printWithNumber = false , $mainPart = null )
     {
         if ( $words == null )
             $words = [ 0 , 1 , 2 ];
 
-        $number = preg_replace('/\s+/u',"",$number);
+        $number = preg_replace('/\s+/u',"", (string) $number);
 
         /**
          * Если не походить по маске под цифровое значение
@@ -274,7 +273,7 @@ class Data
             else if ( is_string( $number ) )
                 $number = strlen( $number );
 
-            else throw new InvalidArgumentException("Для получения слова в зависимости от количества, нужно предать положительное целое, передан" . self::getTypeRu( $number ) . "!");
+            else throw new \InvalidArgumentException("Для получения слова в зависимости от количества, нужно предать положительное целое, передан" . self::getTypeRu( $number ) . "!");
         }
 
         $last = substr( $number , -1 );
@@ -342,24 +341,24 @@ class Data
      * @return false|object Возвращает переданный объект если он является сущностью указанного класса
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     static public function instanceOfClass ($object ,$objectOrClassName ,$throwException = true)
     {
         if (!is_object($objectOrClassName) && !is_string($objectOrClassName))
-            throw new InvalidArgumentException(...Exception::getArguments("Второй аргумент должен быть объектом или именем класса, передан" . static::getTypeRu($objectOrClassName) . "!" ,$throwException));
+            throw new \InvalidArgumentException("Второй аргумент должен быть объектом или именем класса, передан");
 
         $className = $objectOrClassName;
         if (is_object($className))
             $className = get_class($className);
         elseif (!class_exists($className) && !interface_exists($className))
-            throw new RuntimeException(...Exception::getArgByArgTextCode($throwException ,"Не найден указанный для сравнения класс «{$className}»!"));
+            throw new \RuntimeException("Не найден указанный для сравнения класс «{$className}»!");
 
         if (!is_object($object) || !is_a($object, $className))
         {
             if ($throwException)
-                throw new RuntimeException(...Exception::getArgByArgTextCode($throwException ,"Проверяемый объект/значение не принадлежит классу «{$className}», передан" . Data::getTypeRu($object) . "!"));
+                throw new \RuntimeException("Проверяемый объект/значение не принадлежит классу «{$className}», передан");
 
             return false;
         }
@@ -378,8 +377,8 @@ class Data
      * @return false|mixed Возвращает переданную переменную если она принадлежит одному из указанных типов
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     static public function typeOf ($variable ,$typeOrTypes ,$throwException = false)
     {
@@ -399,7 +398,7 @@ class Data
 
                 $type = static::getTypes($typeOrTypes);
 
-                throw new RuntimeException(sprintf($notOfTypeText ,"типу «{$typeOrTypes}: {$type}»"));
+                throw new \RuntimeException(sprintf($notOfTypeText ,"типу «{$typeOrTypes}: {$type}»"));
             }
         }
 
@@ -408,12 +407,12 @@ class Data
             $diff = array_diff($typeOrTypes ,array_keys(static::TYPES));
 
             if ($diff)
-                throw new InvalidArgumentException("Найдены значения не соответствующие возможным названиям типов данных: " . static::getTypeRu($diff) . "! " . $wrongArgumentText);
+                throw new \InvalidArgumentException("Найдены значения не соответствующие возможным названиям типов данных: " . static::getTypeRu($diff) . "! " . $wrongArgumentText);
 
             if (!in_array(gettype($variable) ,$typeOrTypes) && !(in_array(static::TYPE_CALLABLE ,$typeOrTypes) && is_callable($variable)))
             {
                 if ($throwException)
-                    throw new RuntimeException(sprintf($notOfTypeText ,"указанным типам: " . implode(", " ,$typeOrTypes)));
+                    throw new \RuntimeException(sprintf($notOfTypeText ,"указанным типам: " . implode(", " ,$typeOrTypes)));
 
                 return false;
             }
@@ -433,8 +432,8 @@ class Data
      * @return int
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public
     static
@@ -448,7 +447,7 @@ class Data
 
         $length = static::getInteger($length ,"Неверное значение аргумента запрашиваемой длины проверочной суммы!" ,1);
 
-        return str_pad(round(hexdec(substr(md5($value), 0, $length)) * $multi / $div), $length, 0, STR_PAD_LEFT);
+        return str_pad((string) round(hexdec(substr(md5($value), 0, $length)) * $multi / $div), $length, (string) 0, STR_PAD_LEFT);
     }
 
 
@@ -463,8 +462,8 @@ class Data
      * @return int
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public
     static
@@ -490,7 +489,7 @@ class Data
             $checkSum = $checkSum * $multi;
         $power = log($checkSum);
         $checkSum = $checkSum / pow($div ,($power / 5));
-        $checkSum = str_pad($checkSum, $length, 0, STR_PAD_LEFT);
+        $checkSum = str_pad((string) $checkSum, $length, (string) 0, STR_PAD_LEFT);
 
         if (strlen($checkSum) > $length)
             $checkSum = (int) substr($checkSum ,-$length ,$length);
@@ -503,7 +502,7 @@ class Data
         if ($max && $checkSum > $max)
         {
             if ($max && $min > $max)
-                throw new InvalidArgumentException("Неверно казан допустимый интервал, минимально допустимое значение «{$min}», максимально допустимое «{$max}»!");
+                throw new \InvalidArgumentException("Неверно казан допустимый интервал, минимально допустимое значение «{$min}», максимально допустимое «{$max}»!");
 
             $checkSum = $max;
         }
@@ -548,19 +547,19 @@ class Data
      * @return string возвращает строку с текстом об типе переданной переменной
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     static public function getTypeRu ($var ,$withEnd = true ,$symbolsPrint = 15 ,$arrayLength = 5 ,$arrayDepth = 3)
     {
         if ($symbolsPrint)
-            $symbolsPrint = static::isPositiveInteger($symbolsPrint ,"Неверное значение аргумента длины выводимой строки!");
+            $symbolsPrint = static::getInteger($symbolsPrint ,"Неверное значение аргумента длины выводимой строки!", 0);
 
         if ($arrayLength)
-            $arrayLength = static::isPositiveInteger($arrayLength ,"Неверное значение аргумента количества элементов массива для выведения!");
+            $arrayLength = static::getInteger($arrayLength ,"Неверное значение аргумента количества элементов массива для выведения!", 0);
 
         if ($arrayDepth)
-            $arrayDepth = static::isPositiveInteger($arrayDepth ,"Неверное значение аргумента глубины просмотра массива для выведения!");
+            $arrayDepth = static::getInteger($arrayDepth ,"Неверное значение аргумента глубины просмотра массива для выведения!", 0);
 
         $typeName = gettype($var);
 
@@ -605,7 +604,7 @@ class Data
 
             case static::TYPE_DOUBLE:
                 $end = "о";
-                $parts = preg_split("/\.|,/",abs($var));
+                $parts = preg_split("/\.|,/", (string) abs($var));
                 $before = $parts[0];
                 $after = 0;
                 if ( isset($parts[1]) )
@@ -621,7 +620,7 @@ class Data
 
                 if ($symbolsPrint && $symbolsPrint - 1)
                 {
-                    if (strlen(abs($var)) > $symbolsPrint )
+                    if (strlen((string) abs($var)) > $symbolsPrint )
                         $var = mb_strcut($var ,0 ,($symbolsPrint - 1)) . Text::SYMBOL_ELLIPSIS;
 
                     $text = $text . ": «{$var}»";
@@ -640,11 +639,11 @@ class Data
                     $text = "целое "
                             . ($var < 0 ? "отрицательное" : "положительное")
                             . " число с "
-                            . self::countWordForm(strlen(abs($var)),["ой","ами","ами"],true,"цифр");
+                            . self::countWordForm(strlen((string) abs($var)),["ой","ами","ами"],true,"цифр");
 
                     if ($symbolsPrint && $symbolsPrint - 1)
                     {
-                        if (strlen(abs($var)) > $symbolsPrint )
+                        if (strlen((string) abs($var)) > $symbolsPrint )
                             $var = mb_strcut($var,0,($symbolsPrint - 1)) . Text::SYMBOL_ELLIPSIS;
 
                         $text = $text . ": «{$var}»";
@@ -654,6 +653,7 @@ class Data
                 break;
 
             case static::TYPE_NULL:
+            case static::TYPE_RESOURCE:
                 $end = "а";
                 $text = static::getTypes($typeName);
                 break;
@@ -666,11 +666,6 @@ class Data
                     $text = $text . " [функция]";
                 while ($className = get_parent_class($className))
                 {$text = $text . " >> наследник «{$className}»";}
-                break;
-
-            case static::TYPE_RESOURCE:
-                $end = "а";
-                $text = static::getTypes($typeName);
                 break;
 
             case static::TYPE_STRING:
@@ -732,7 +727,6 @@ class Data
      * @param null   $displayIn
      *
      * @return string
-     * @throws \Parus\Exception\FileErrorException
      */
     static function readableFileSize ( $size , $for = 'ru' , $digitsAfter = 1 , $displayIn = null )
     {
@@ -754,11 +748,11 @@ class Data
      * @param DateTime                          $max   - DateTime - максимальное значение, если дата получиться больше, то будет установлено это значение
      * @param string                            $order - если переданный источник - индексный массив, то указать, в какой последовательности расположены значения "dmy"|"ymd"|"mdy"
      *
-     * @return \Parus\DateTime
+     * @return DateTimeInterface
      *
      * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public static function getDateTimeFrom ($date ,$time = [] ,DateTime $min = null ,DateTime $max = null ,$order = "dmy")
     {
@@ -835,10 +829,10 @@ class Data
          */
         if (is_array($date) && count($date) > 0) {
             if (count($date) != 3)
-                throw new InvalidArgumentException( 'Для взятия временной метки, нужно передать массив с тремя элементами, передан' . self::getTypeRu( $date ) . "!" );
+                throw new \InvalidArgumentException( 'Для взятия временной метки, нужно передать массив с тремя элементами, передан' . self::getTypeRu( $date ) . "!" );
 
             if ( !is_string( $order ) || strlen( $order ) != 3 )
-                throw new InvalidArgumentException( 'Ошибка при получении временной метки, порядок частей в массиве указан в неверном формате, возможные варианты "dmy"|"ymd"|"mdy", указан' . self::getTypeRu( $order ) . "!" );
+                throw new \InvalidArgumentException( 'Ошибка при получении временной метки, порядок частей в массиве указан в неверном формате, возможные варианты "dmy"|"ymd"|"mdy", указан' . self::getTypeRu( $order ) . "!" );
 
             /**
              * В строку, если массив индексный или используются не такие ключи - dmy, то в последовательности $order будут взяты параметры массива
@@ -915,8 +909,6 @@ class Data
 
         else if ( $max && $max instanceof DateTime && $date < $max )
             $date = $max;
-
-
 
         return $date;
     }
