@@ -26,8 +26,7 @@
     ],
     "require": {
         "php": "^7.3 || ^8",
-        "ext-mbstring": "*",
-        "ext-bcmath": "*"
+        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
