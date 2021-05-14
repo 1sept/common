@@ -297,7 +297,7 @@ class Data
              * Количество и неразрывный пробел
              */
             if ( $printWithNumber )
-                $text = number_format( $number , 0 , "" , Text::SPACE_FOUR_PER_EM ) . " ";
+                $text = number_format( (float) $number , 0 , "" , Text::SPACE_FOUR_PER_EM ) . " ";
 
             if ( $mainPart )
                 $text = $text . $mainPart;
