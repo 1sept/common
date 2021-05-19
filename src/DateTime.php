@@ -1275,7 +1275,10 @@ class DateTime extends \DateTime
             [$dateTimeFrom, $dateTimeTo] = [ $dateTimeTo, $dateTimeFrom ];
 
         if ($format == null) {
-            $format = $dateTimeFrom::INTERVAL_STRING_FORMAT;
+            if (defined($dateTimeFrom::class . '::INTERVAL_STRING_FORMAT'))
+                $format = $dateTimeFrom::INTERVAL_STRING_FORMAT;
+            else
+                $format = self::INTERVAL_STRING_FORMAT;
         }
 
         $seconds1 = ":" . $dateTimeFrom->format("s");
