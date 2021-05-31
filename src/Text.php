@@ -1592,18 +1592,25 @@ class Text
      *        <li>2 011 лошадей.</li>
      *    </ul>
      *
-     * @param string        $number            количество для которого будет подбираться правильная форма слова
-     * @param string[]|null $words_array       массив с 3-мя вариантами слова словами
-     * @param boolean       $print_with_number если true, то в возвращаемая строка будет с переданным количеством и чрез неразрывный пробел форма слова
-     * @param null|string   $main_part         неизменяемая часть в форме слова
+     * @param string|int|float $number            количество для которого будет подбираться правильная форма слова
+     * @param string[]|null    $words_array       массив с 3-мя вариантами слова словами
+     * @param boolean          $print_with_number если true, то в возвращаемая строка будет с переданным количеством и чрез неразрывный пробел форма слова
+     * @param null|string      $main_part         неизменяемая часть в форме слова
      *
      * @return int|string возвращает одно из значений переданного массива, если массив не передан, то вернёт нужный index 0,1,2
+     * @throws \Exception
      */
-    public static function getCountWordForm (string $number , $words_array = null , $print_with_number = false , $main_part = null ) : string
+    public static function getCountWordForm ($number, ?array $words_array = null, bool $print_with_number = false, ?string $main_part = null)
     {
+        if (preg_match_all('/[^\d\.]/', (string) $number, $matches))
+            throw new \UnexpectedValueException("Для выведения индекса или формы слова для числа, первый аргумент должен быть целым, дробным или строкой! Передан" . Data::getTypeRu($words_array) . ". Недопустимые символы: " . Arrays::implodeToString($matches) . ".");
+
         // Если лова не указаны, то вернуть индексы:
-        if ($words_array !== null)
-            $words = [0, 1, 2];
+        if ($words_array === null)
+            $words_array = [0, 1, 2];
+
+        if (count($words_array) != 3)
+            throw new \LengthException("Для выведения индекса или формы слова для числа ({$number}) нужно указать во втором аргументе 3 значения, для вариантов: «1», «2-4», «5-0,11-14»! Для второго аргумента передан" . Data::getTypeRu($words_array) . ".");
 
         $text = "";
         // Если предан массив со значениями:
@@ -1616,6 +1623,8 @@ class Text
             if ($main_part)
                 $text = $text . $main_part;
         }
+
+        $number = (string) $number;
 
         $last_digit = substr($number, -1, 1);
 

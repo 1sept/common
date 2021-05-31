@@ -547,7 +547,6 @@ class Data
      * @return string возвращает строку с текстом об типе переданной переменной
      *
      * @throws \Exception
-     * @throws \Exception
      * @throws \InvalidArgumentException
      */
     static public function getTypeRu ($var ,$withEnd = true ,$symbolsPrint = 15 ,$arrayLength = 5 ,$arrayDepth = 3)
