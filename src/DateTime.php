@@ -378,7 +378,7 @@ class DateTime extends \DateTime
      */
     public static function getCurrent ($withMicro = null)
     {
-        return new static(null, null, $withMicro);
+        return new static("now", null, $withMicro);
     }
 
     /**
@@ -481,7 +481,7 @@ class DateTime extends \DateTime
     {
         $microseconds = static::checkMicroseconds($microseconds, $digits, $throwException);
 
-        $digits = Data::getInteger($digits, \Parus\Exception\Exception::check($throwException, "Неверное указано значение аргумента кол-ва цифр микросекунд!"), 1, 8);
+        $digits = Data::getInteger($digits, "Неверное указано значение аргумента кол-ва цифр микросекунд!", 1, 8);
 
         if ($digits === false)
             return $digits;
@@ -517,12 +517,12 @@ class DateTime extends \DateTime
             }
         }
 
-        $exception = \Parus\Exception\Exception::check($throwException, "Неверно указано значение аргумента микросекунд для получения дробного значения микросекунд из строки");
+        $exception = new \Exception("Неверно указано значение аргумента микросекунд для получения дробного значения микросекунд из строки");
 
         $microsecondsString = Text::prepareSingleLine($microsecondsString, true, $exception . "!");
 
         if (!preg_match("/^(?:-?\d+(\.|,))?\d{1,8}$/", $microsecondsString))
-            throw new InvalidArgumentException(...\Parus\Exception\Exception::getArgByArgTextCode($exception, Data::getTypeRu($microsecondsString, true, 150) . "!"));
+            throw new \Exception( Data::getTypeRu($microsecondsString, true, 150) . "!");
 
         if (preg_match("/\.|,/", $microsecondsString))
             $microsecondsString = preg_split("/\.|,/", $microsecondsString)[1];
@@ -813,7 +813,7 @@ class DateTime extends \DateTime
      * @return \Parus\DateTimeDiff|string
      * @see \Parus\DateTimeDiff
      */
-    public function smart ($dateTime = null, $asString = true)
+    public function smart ($dateTime = "now", $asString = true)
     {
         $diff = new DateTimeDiff($this,$this->getTimezone(),$dateTime);
 
@@ -829,7 +829,7 @@ class DateTime extends \DateTime
      *
      * @see \Parus\DateTimeDiff
      */
-    public function getDiff ($dateTime = null)
+    public function getDiff ($dateTime = "now")
     {
         return new DateTimeDiff($this, $this->getTimezone(), $dateTime);
     }

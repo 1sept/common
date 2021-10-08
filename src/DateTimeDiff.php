@@ -534,6 +534,9 @@ class DateTimeDiff extends DateTime
             {
                 $text = $this->getHours();
 
+                if ($minutes >= 45)
+                    $text = preg_replace("/(^\d+)/" ,("\${1}" . '¾') ,$this->getHours());
+
                 if ($minutes >= 30)
                     $text = preg_replace("/(^\d+)/" ,("\${1}" . Text::SYMBOL_HALF) ,$this->getHours());
 
