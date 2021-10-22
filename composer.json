@@ -4,13 +4,16 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Alexander Vasilyev"
+            "name": "Alexander Vasilyev",
+            "email": "a.vasilyev@1sept.ru"
         },
         {
-            "name": "Наум Соловейчик"
+            "name": "Наум Соловейчик",
+            "email": "naum@1sept.ru"
         },
         {
-            "name": "Тимофей Соловейчик"
+            "name": "Тимофей Соловейчик",
+            "email": "timofey@1sept.ru"
         }
     ],
     "keywords": [
@@ -22,7 +25,7 @@
         "1sept"
     ],
     "require": {
-        "php": ">=7.4",
+        "php": "^7.3 || ^8",
         "ext-mbstring": "*"
     },
     "autoload": {
