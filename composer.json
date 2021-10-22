@@ -22,7 +22,8 @@
         "1sept"
     ],
     "require": {
-        "php": "^7.3 || ^8"
+        "php": "^7.3 || ^8",
+        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
