@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Sept\Common;
 
-use Parus\Exception\InvalidArgumentException;
-use Parus\Exception\RuntimeException;
-use Parus\Exception\UnexpectedValueException;
-
 /**
  * Класс функций, для работы с массивами
  *
@@ -25,7 +21,6 @@ class Arrays
      *
      * @return array Многомерный массив (проиндексированная матрица)
      *
-     * @throws \Parus\Exception\UnexpectedValueException
      * @example:
      * $source = [
      *     0 => [
@@ -79,7 +74,7 @@ class Arrays
             $keysValues = [];
             foreach ($keys as $key) {
                 if (!isset($row[$key])) {
-                    throw new UnexpectedValueException('В '. $rowNum .'-й строке отсутствует ключ «'.$key .'»');
+                    throw new \UnexpectedValueException('В '. $rowNum .'-й строке отсутствует ключ «'.$key .'»');
                 }
                 $keysValues[] = $row[$key];
                 unset($row[$key]);
@@ -106,14 +101,13 @@ class Arrays
      *                              - replace — заменить новым значанием
      *
      * @return array
-     * @throws \Parus\Exception\InvalidArgumentException
      */
     public static function merge (array $a, array $b, $mergeStrategy = 'exception')
     {
         $mergeStrategyAvailable = ['exception', 'leave_original', 'replace'];
 
         if (!in_array($mergeStrategy, $mergeStrategyAvailable)) {
-            throw new InvalidArgumentException("Указана неизвестная стратегия объединения массивов, возможны такие варианты:" . implode(", ",$mergeStrategyAvailable) . "; передан" . Data::getTypeRu($mergeStrategy) . "!");
+            throw new \InvalidArgumentException("Указана неизвестная стратегия объединения массивов, возможны такие варианты:" . implode(", ",$mergeStrategyAvailable) . "; передан" . Data::getTypeRu($mergeStrategy) . "!");
         }
 
         $result = $a;
@@ -122,8 +116,8 @@ class Arrays
                 if (is_array($a[$key]) and is_array($b[$key])) {
                     try {
                         $result[$key] = self::merge($a[$key], $b[$key], $mergeStrategy);
-                    } catch (UnexpectedValueException $e) {
-                        throw new UnexpectedValueException('['. $key .']'. $e->getMessage());
+                    } catch (\UnexpectedValueException $e) {
+                        throw new \UnexpectedValueException('['. $key .']'. $e->getMessage());
                     }
                 } else {
                     if ($mergeStrategy == 'leave_original') {
@@ -131,7 +125,7 @@ class Arrays
                     } else if ($mergeStrategy == 'replace') {
                         $result[$key] = $b[$key];
                     } else if ($mergeStrategy == 'exception') {
-                        throw new UnexpectedValueException('['. $key .'] ключи массивов не уникальны');
+                        throw new \UnexpectedValueException('['. $key .'] ключи массивов не уникальны');
                     }
                 }
             } else {
@@ -273,7 +267,6 @@ class Arrays
      * @param boolean         $withKeys   И добавлять неиндексные ключи
      *
      * @return string
-     * @throws \Parus\Exception\UnexpectedValueException
      */
     public static function multiImplode($glues, array $array, array $levelsGlue = ["",""], $exception = null, $withKeys = false){
 
@@ -308,14 +301,14 @@ class Arrays
              * Если в массиве уже нет значений
              */
             if ( is_null($g) && self::$arrayException )
-                throw new UnexpectedValueException("Не указаны символы для склеивания элементов " . self::$arrayLevel . " уровня массива!");
+                throw new \UnexpectedValueException("Не указаны символы для склеивания элементов " . self::$arrayLevel . " уровня массива!");
         }
         /**
          * Если не строка и не NULL и не было указана отмена предупреждений,
          * то выкинуть предупреждение
          */
         else if ( !is_string($glues) && !is_null($glues) && self::$arrayException )
-            throw new UnexpectedValueException("Первым аргументов метода должны быть символы склеивания элементов, строка или массив со строками для каждого уровня многомерного массива, передан" . Data::getTypeRu($glues) . "!");
+            throw new \UnexpectedValueException("Первым аргументов метода должны быть символы склеивания элементов, строка или массив со строками для каждого уровня многомерного массива, передан" . Data::getTypeRu($glues) . "!");
 
         /**
          * Если нет значения для склеивания
@@ -380,7 +373,7 @@ class Arrays
             Text::isInteger($number, "Неверное значение при проходе по массиву чисел для преобразования в массивы интервалов у элемента «{$indexOrKey}»!");
 
             if ($withOutDuplicates && in_array($number, $allNumbers))
-                throw new RuntimeException("В массиве перебираемых значений уже есть значение «{$number}»!");
+                throw new \RuntimeException("В массиве перебираемых значений уже есть значение «{$number}»!");
 
             // Преобразовать в целое:
             if ($convertToIntegers)
@@ -510,7 +503,7 @@ class Arrays
         foreach ($numbersIntervals as $indexOrKey => $interval)
         {
             if (!$interval || !is_array($interval))
-                throw new RuntimeException("Неверное значение при проходе по массиву интервалов у интервала «{$indexOrKey}»! Ожидался массив с массивами! Передан" . Data::getTypeRu($interval) . "!");
+                throw new \RuntimeException("Неверное значение при проходе по массиву интервалов у интервала «{$indexOrKey}»! Ожидался массив с массивами! Передан" . Data::getTypeRu($interval) . "!");
 
             // Первый элемент в интервале добавить в строку:
             $intervalsString = $intervalsString . $interval[0];
