@@ -1599,7 +1599,7 @@ class Text
      *
      * @return int|string возвращает одно из значений переданного массива, если массив не передан, то вернёт нужный index 0,1,2
      */
-    public static function getCountWordForm ($number, ?array $words_array = null, bool $print_with_number = false, ?string $main_part = null): int|string
+    public static function getCountWordForm (string|int|float $number, ?array $words_array = null, bool $print_with_number = false, ?string $main_part = null): int|string
     {
         if (preg_match_all('/[^\d\.]/', (string) $number, $matches))
             throw new \UnexpectedValueException("Для выведения индекса или формы слова для числа, первый аргумент должен быть целым, дробным или строкой! Передан" . Data::getTypeRu($words_array) . ". Недопустимые символы: " . Arrays::implodeToString($matches) . ".");

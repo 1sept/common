@@ -379,7 +379,7 @@ class Arrays
         {
             Text::isInteger($number, "Неверное значение при проходе по массиву чисел для преобразования в массивы интервалов у элемента «{$indexOrKey}»!");
 
-            if ($withOutDuplicates && array_search($number, $allNumbers))
+            if ($withOutDuplicates && in_array($number, $allNumbers))
                 throw new RuntimeException("В массиве перебираемых значений уже есть значение «{$number}»!");
 
             // Преобразовать в целое:
