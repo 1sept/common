@@ -527,7 +527,7 @@ class DateTimeDiff extends DateTime
                     if ($was)
                         $smart = "менее{$sp}2-x{$sp}часов{$sp}{$this->getPast()}";
                     else
-                        $smart = "менее{$sp}чем{$this->getWill()}{$sp}2{$sp}часа";
+                        $smart = "менее{$sp}чем{$sp}{$this->getWill()}{$sp}2{$sp}часа";
                 }
             }
             else
@@ -548,7 +548,7 @@ class DateTimeDiff extends DateTime
                     if ($was)
                         $smart = "менее{$sp}дня{$sp}{$this->getPast()}";
                     else
-                        $smart = "менее{$sp}чем{$this->getWill()}{$sp}день";
+                        $smart = "менее{$sp}чем{$sp}{$this->getWill()}{$sp}день";
                 }
             }
 
