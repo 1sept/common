@@ -296,7 +296,7 @@ class DateTime extends \DateTime
      *
      * @see \Sept\Common\DateTime::format()
      * @see \DateTime::format()
-     * @see date() – http://php.net/manual/ru/function.date.php
+     * @see https://www.php.net/manual/ru/datetime.format.php
      *
      * @example
      * "d M Y at H:i"    returns "08 Mar 2000 at 09:37"
@@ -741,30 +741,31 @@ class DateTime extends \DateTime
      * Интервал до даты в виде читаемой строки
      *
      * @param null|string|\DateTimeInterface $dateTime Дата с которой сравнивать
-     * @param boolean                        $asString Получить строку, иначе получить объект \Sept\Common\DateTimeDiff
+     * @param integer                        $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
      *
      * @return \Sept\Common\DateTimeDiff|string
      * @see \Sept\Common\DateTimeDiff
      */
-    public function smart (null|string|\DateTimeInterface $dateTime = "now", bool $asString = true) : string|DateTimeDiff
+    public function smart (null|string|\DateTimeInterface $dateTime = "now", int $punctuality = 0) : string|DateTimeDiff
     {
-        $diff = new DateTimeDiff($this, $this->getTimezone(), $dateTime);
+        $diff = new DateTimeDiff($this, $this->getTimezone(), $dateTime, $punctuality);
 
-        return $asString ? $diff->getSmart() : $diff;
+        return $diff->getSmart();
     }
 
     /**
      * Объект для выведения интервала дат
      *
      * @param null|string|\DateTimeInterface $dateTimeTo Дата с которой сравнивать
+     * @param integer                        $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
      *
      * @return \Sept\Common\DateTimeDiff
      *
      * @see \Sept\Common\DateTimeDiff
      */
-    public function getDiff (\DateTimeInterface|string|null $dateTimeTo = "now") : DateTimeDiff
+    public function getDiff (\DateTimeInterface|string|null $dateTimeTo = "now", int $punctuality = 0) : DateTimeDiff
     {
-        return new DateTimeDiff($this, $this->getTimezone(), $dateTimeTo);
+        return new DateTimeDiff($this, $this->getTimezone(), $dateTimeTo, $punctuality);
     }
 
     /**
@@ -1201,8 +1202,8 @@ class DateTime extends \DateTime
         if (!($format & DateTimeDiff::MINUTES))
             $mins1 = $mins2 = ":00";
 
-        $hour1 = "" . $dateTimeFrom->format("h");
-        $hour2 = "" .   $dateTimeTo->format("h");
+        $hour1 = "" . $dateTimeFrom->format("H");
+        $hour2 = "" .   $dateTimeTo->format("H");
 
         if (!($format & DateTimeDiff::HOURS))
             $hour1 = $hour2 = $mins1 = $mins2 = "";
@@ -1217,9 +1218,15 @@ class DateTime extends \DateTime
         if ($day1 or !$glue) {
             $month1 = Text::SPACE_NOBR . array_values(static::MONTHS_RU)[$dateTimeFrom->format("n") - 1];
             $month2 = Text::SPACE_NOBR . array_values(static::MONTHS_RU)[$dateTimeTo->format("n") - 1];
+
+            if (!$day2)
+                $month2 = Text::SPACE_NOBR . Text::lowercaseAllCharacters($dateTimeTo->format("F"));
         } else {
             $month1 = Text::SPACE_NOBR . $dateTimeFrom->format("F");
             $month2 = Text::SPACE_NOBR . $dateTimeTo->format("F");
+
+            if ($day2)
+                $month2 = Text::SPACE_NOBR . Text::lowercaseAllCharacters($dateTimeTo->format("F"));
         }
 
         if (!($format & DateTimeDiff::MONTHS)) {

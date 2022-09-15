@@ -65,7 +65,7 @@ namespace Sept\Common;
  *   [months:protected] =>
  *   [years:protected] => 5 лет
  *   [ages:protected] =>
- *   [mils:protected] =>
+ *   [millenniums:protected] =>
  *   [totalSeconds] => 159069615
  *   [totalMinutes] => 2651160
  *   [totalHours] => 44186
@@ -157,6 +157,11 @@ class DateTimeDiff extends DateTime
     protected $interval;
 
     /**
+    * @var bool
+    */
+    protected bool $toNow = false;
+
+    /**
     * @var integer Если 1 – позже сравниваемой даты, 0 – ранее сравниваемой даты
     */
     protected $was;
@@ -211,7 +216,7 @@ class DateTimeDiff extends DateTime
     protected $ages;
 
     /** @var string */
-    protected $mils;
+    protected $millenniums;
 
 
 
@@ -281,7 +286,7 @@ class DateTimeDiff extends DateTime
         ,"months"
         ,"years"
         ,"ages"
-        ,"mils"
+        ,"millenniums"
     ];
 
 
@@ -289,12 +294,13 @@ class DateTimeDiff extends DateTime
      * @param string|\DateTimeInterface $dateTime      Строка даты и времени, конвертируемая в объект даты и времени, для которого нужно вычислить разницу
      * @param null|string|\DateTimeZone $timeZone
      * @param null|string|\DateTime     $dateToCompare [опция] Дата и время с которыми сравнивать, если не указано, то сравнит с настоящим
+     * @param integer                   $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
      */
-    function __construct ($dateTime = "now" ,$timeZone = null ,$dateToCompare = "now")
+    function __construct ($dateTime = "now", $timeZone = null, $dateToCompare = "now", int $punctuality = 0)
     {
-        parent::__construct($dateTime ,$timeZone);
+        parent::__construct($dateTime, $timeZone);
 
-        $this->getDiff($dateToCompare);
+        $this->getDiff($dateToCompare, $punctuality);
     }
 
 
@@ -308,6 +314,10 @@ class DateTimeDiff extends DateTime
      */
     function getDiff (\DateTimeInterface|string|null $dateTimeTo = "now", int $punctuality = 0) : self
     {
+        $this->toNow = false;
+        if ($dateTimeTo === '' || strtolower($dateTimeTo) === 'now')
+            $this->toNow = true;
+
         if (!($dateTimeTo instanceof parent))
             $dateTimeTo = new parent($dateTimeTo);
 
@@ -348,7 +358,7 @@ class DateTimeDiff extends DateTime
         $this->months  = !$months  ? "" : Data::countWordForm($months, [ "",    "а",   "ев"  ],true,"месяц"     );
         $this->years   = !$years   ? "" : Data::countWordForm($years,  [ "год", "года","лет" ],true             );
         $this->ages    = !$ages    ? "" : Data::countWordForm($ages,   [ "",    "а",   "ов"  ],true,"век"       );
-        $this->mils    = !$mils    ? "" : Data::countWordForm($mils,   [ "е",   "я",   "й"   ],true,"тысячелети");
+        $this->millenniums = !$mils    ? "" : Data::countWordForm($mils,   [ "е",   "я",   "й"   ],true,"тысячелети");
 
         $this->totalSeconds = abs($dateTimeTo->getTimestamp() - $this->getTimestamp());
         $this->totalMinutes = (int) floor($this->getTotalSeconds() / 60);
@@ -375,10 +385,15 @@ class DateTimeDiff extends DateTime
 
         $past = null;
         $will = null;
-        if ($was)
-            $past = Text::SPACE_NOBR . $this->getPast();
-        else
-            $will = $this->getWill() . Text::SPACE_NOBR;
+
+        if ($this->isToNow())
+        {
+//            dump($this->isToNow());
+            if ($was)
+                $past = Text::SPACE_NOBR . $this->getPast();
+            else
+                $will = $this->getWill() . Text::SPACE_NOBR;
+        }
 
         $fields = [
              "strTotalSeconds"
@@ -814,10 +829,10 @@ class DateTimeDiff extends DateTime
             $dateString = $dateString . $this->format(" (l)");
         else if ($this->getTotalDays())
         {
-            $dateString = $this->format("j{$sp}F в{$sp}G:i (l)");
+            $dateString = $this->format("j{$sp}F Y{$sp}года в{$sp}G:i (l)");
 
-            if ($this->format("Y") != date("Y"))
-                $dateString = $this->format("j{$sp}F Y{$sp}года в{$sp}G:i (l)");
+            if ($this->isToNow() && $this->format("Y") == date("Y"))
+                $dateString = $this->format("j{$sp}F в{$sp}G:i (l)");
         }
 
         $this->text       = $text;
@@ -837,6 +852,13 @@ class DateTimeDiff extends DateTime
                 $this->smart = $this->getSmart() . " в полночь, " . preg_replace("/в\s/u" ,"" ,$this->getDateString());
             else
                 $this->smart = $this->getSmart() . ", " . $this->getDateString();
+        }
+
+        // Если проверяется не по сейчас:
+        if (!$this->isToNow())
+        {
+            $this->text  = $this->getCountersByBit($punctuality) . $sp .  self::getIntervalString($this, $this->dateTimeTo, $punctuality);
+            $this->smart = $this->getCountersByBit($punctuality) . $sp .  self::getIntervalString($this, $this->dateTimeTo, $punctuality);
         }
 
         return $this;
@@ -875,6 +897,37 @@ class DateTimeDiff extends DateTime
         }
 
         return $this->allCounters;
+    }
+
+
+    /**
+     * @param integer $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
+     *
+     * @return string
+     */
+    function getCountersByBit (int $punctuality = 0) : string
+    {
+        $strings = [];
+        foreach (array_reverse($this->fields) as $field)
+        {
+            $bit = self::TIME_UNITS[$field];
+
+            if (!($punctuality & $bit))
+                continue;
+
+            if ($this->$field)
+                $strings[] = $this->$field;
+        }
+
+        /**
+         * Если есть разница
+         */
+        if ($strings)
+            $strings = implode(" ", $strings);
+        else
+            $strings = "";
+
+        return $strings;
     }
 
 
@@ -1047,9 +1100,9 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getMils () : string
+    function getMillenniums () : string
     {
-        return $this->mils;
+        return $this->millenniums;
     }
 
 
@@ -1240,6 +1293,14 @@ class DateTimeDiff extends DateTime
     function getFields () : array
     {
         return $this->fields;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isToNow () : bool
+    {
+        return $this->toNow;
     }
 
 }
