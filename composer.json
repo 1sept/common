@@ -1,6 +1,6 @@
 {
     "name": "1sept/common",
-    "description": "September First useful common methods",
+    "description": "September First useful common methods and functions",
     "license": "MIT",
     "authors": [
         {
@@ -25,8 +25,9 @@
         "1sept"
     ],
     "require": {
-        "php": "^7.3 || ^8",
-        "ext-mbstring": "*"
+        "php": "^8.1",
+        "ext-mbstring": "*",
+        "ext-calendar": "*"
     },
     "autoload": {
         "psr-4": {
