@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Sept\Common;
 
-use Parus\Exception\BadMethodCallException;
-use Parus\Exception\InvalidArgumentException;
-use Parus\Exception\RuntimeException;
-
 /**
  * Дата + Время
  *
@@ -179,9 +175,9 @@ class DateTime extends \DateTime
 
     /**
      * Микросекунды – 1 000 000
-     * @var float
+     * @var int
      */
-    protected $microseconds = 0.0;
+    protected $microseconds = 0;
 
     /**
      * Можно ли менять значение объекта
@@ -190,17 +186,13 @@ class DateTime extends \DateTime
     protected $changeable = true;
 
     /**
-     * !!! C аргументами использовать \Parus\DateTime::get($date, $timezone) !!!
+     * !!! C аргументами использовать \Sept\Common\DateTime::get($date, $timezone) !!!
      *
      * @param string|\DateTimeInterface $dateTime  Дата (пример: 2015-06-01)
      * @param null|\DateTimeZone        $timeZone  Часовой пояс
      * @param null|boolean              $withMicro Работать и с микросекундами
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function __construct ($dateTime = 'now', $timeZone = null, $withMicro = null)
+    public function __construct (string|\DateTimeInterface $dateTime = 'now', null|\DateTimeZone $timeZone = null, null|bool $withMicro = null)
     {
         if ($timeZone !== null) {
             Data::instanceOfClass($timeZone, \DateTimeZone::class, "Неверно указано значение аргумента временной зоны для создания объекта " . __CLASS__ . "!");
@@ -220,7 +212,7 @@ class DateTime extends \DateTime
 
         } else {
             if (preg_match(static::REGEXP_MYSQL_FORMAT_WITH_MICRO, $dateTimeStr, $matches))
-                $this->setMicroseconds(floatval("0." . $matches["microseconds"]));
+                $this->setMicroseconds((int) $matches["microseconds"]);
 
             if ((!$dateTimeStr or $dateTimeStr == "now") and ($withMicro or ($withMicro !== false and static::isWithMicro()))) {
                 $this->setMicroseconds(static::getCurrentMicroseconds());
@@ -235,13 +227,9 @@ class DateTime extends \DateTime
      * @param null|string|\DateTimeZone            $timeZone  Часовой пояс
      * @param null|boolean                         $withMicro Работать и с микросекундами
      *
-     * @return false|null|\Parus\Date|\Parus\DateTime|static
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return false|null|static
      */
-    public static function get ($dateTime = null, $timeZone = null, $withMicro = null)
+    public static function get (null|false|string|\DateTimeInterface $dateTime = null, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : false|null|static
     {
         if ($dateTime === null or $dateTime === false) {
             return $dateTime;
@@ -272,7 +260,7 @@ class DateTime extends \DateTime
          * Возвращать FALSE если:
          * 0000-00-00 00:00:00.0+
          */
-        if (strpos($dateTime, static::MYSQL_FALSE . ".0") === 0 and preg_match(static::REGEXP_MYSQL_FORMAT_WITH_MICRO, $dateTime)) {
+        if (str_starts_with($dateTime, static::MYSQL_FALSE . ".0") and preg_match(static::REGEXP_MYSQL_FORMAT_WITH_MICRO, $dateTime)) {
             return false;
         }
 
@@ -306,7 +294,7 @@ class DateTime extends \DateTime
      *
      * @param string $format The format of the outputted date string
      *
-     * @see \Parus\DateTime::format()
+     * @see \Sept\Common\DateTime::format()
      * @see \DateTime::format()
      * @see date() – http://php.net/manual/ru/function.date.php
      *
@@ -321,16 +309,16 @@ class DateTime extends \DateTime
      * "r"               returns "Thu, 23 Feb 2000 16:05:09 +0300"
      * "u"               returns "004532" – Микросекунды
      *
-     * @return string|integer
+     * @return string
      */
-    public function format ($format)
+    public function format (string $format) : string
     {
         // Найти латинские буквы:
         preg_match_all('/[djFMlDuR]/', $format, $matches);
         if (!empty($matches[0]))
         {
             $months = array_values(array_keys(self::MONTHS_RU));
-            // Если в запрошеном формате есть запрос на день месяца, то выводить месяц в Родительном падеже:
+            // Если в запрошенном формате есть запрос на день месяца, то выводить месяц в Родительном падеже:
             if (array_intersect($matches[0], ['d', 'j']))
                 $months = array_values(self::MONTHS_RU);
 
@@ -352,14 +340,14 @@ class DateTime extends \DateTime
                     $replaceTo = self::WEEK_DAYS_RU_SHORT[(parent::format('N') - 1)];
                 // Микросекунды
                 elseif ($char == 'u')
-                    $replaceTo = $this->getMicrosecondsAsString();
+                    $replaceTo = (string) $this->getMicroseconds();
                 // День недели в винительном падеже
                 elseif ($char == 'R')
                 {
                     // Для Вторника если в строке есть предлог «в», заменить на «во»
                     if (parent::format("N") == 2)
                         $format = preg_replace('/\bв\s+(?=\bR\b)/uXs', 'во' . Text::SPACE_NOBR, $format, 1);
-                    $replaceTo = self::getWeekDays(parent::format("N"),true);
+                    $replaceTo = self::getWeekDays((int) parent::format("N"),true);
                 }
 
                 if ($replaceTo)
@@ -372,11 +360,11 @@ class DateTime extends \DateTime
 
     /**
      * Возвращает текущую ДатуВремя
-     * @deprecated new \Parus\DateTime()
-     * @param null|boolean $withMicro Работать и с микросекундами
-     * @return \Parus\DateTime|\Parus\Date
+     * @deprecated new \Sept\Common\DateTime()
+     * @param null|bool $withMicro Работать и с микросекундами
+     * @return static
      */
-    public static function getCurrent ($withMicro = null)
+    public static function getCurrent (null|bool $withMicro = null) : static
     {
         return new static("now", null, $withMicro);
     }
@@ -386,12 +374,9 @@ class DateTime extends \DateTime
      *
      * @param null|int|float $timeStamp
      *
-     * @return \Parus\DateTime
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return static
      */
-    public static function getByTimeStamp ($timeStamp = null)
+    public static function getByTimeStamp (null|int|float $timeStamp = null) : static
     {
         $timeStampInt = intval($timeStamp);
         $microseconds = abs($timeStamp) - abs($timeStampInt);
@@ -411,55 +396,42 @@ class DateTime extends \DateTime
      *
      * @param int $digits
      *
-     * @return float
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return int
      */
-    public static function getCurrentMicroseconds ($digits = 6)
+    public static function getCurrentMicroseconds (int $digits = 6) : int
     {
-        $digits = Data::getInteger($digits, new InvalidArgumentException("Неверное указано значение аргумента кол-ва цифр микросекунд!"), 1, 8);
+        $digits = Data::getInteger($digits, new \InvalidArgumentException("Неверное указано значение аргумента кол-ва цифр микросекунд!"), 1, 8);
 
-        // microtime() >> 0.56370900 1476108468
-        $float = floatval(substr(microtime(), 0, $digits + 2));
+        $microseconds = (string) hrtime()[1];
 
-        if ($float == 0.0)
-            return $float;
+        // Если менее 9-и символов, то значит значение менее 0.1 секунды, заменить на «0»:
+        if (strlen($microseconds) > 9)
+            return 0;
 
-        if ($float < Data::FLOATVAL_LOWEST)
-            $float = floatval(Data::FLOATVAL_LOWEST);
+        // hrtime()
+        $int = (int) substr($microseconds, 0, $digits);
 
-        return $float;
+        return $int;
     }
 
     /**
      * Проверить значение микросекунд
      *
-     * @param float                  $microseconds
-     * @param int                    $digits
-     * @param bool|string|\Exception $throwException
+     * @param float|int $microseconds
      *
-     * @return false|float
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return float
      */
-    public static function checkMicroseconds ($microseconds, $digits = 6, $throwException = true)
+    public static function checkMicroseconds (float|int $microseconds) : float
     {
-        if (!is_float($microseconds) or $microseconds < 0 or $microseconds > 0.999999)
-        {
-            if ($throwException)
-                throw new InvalidArgumentException(...\Parus\Exception\Exception::getArgByArgTextCode($throwException, "Неверно указано значение аргумента микросекунд! Может быть дробное от 0 до 0.9999999, передан" . Data::getTypeRu($microseconds) . "!"));
-
-            return false;
-        }
-
-        if ($microseconds == 0.0)
-            return $microseconds;
+        // Если не дробное, то преобразовать в дробное:
+        if (! is_float($microseconds))
+            $microseconds = (float) ("0." . ((string) $microseconds));
+        // Если дробное больше 1, то вычесть из дробного целое:
+        elseif ($microseconds > 1)
+            $microseconds = $microseconds - (int) $microseconds;
 
         if ($microseconds < Data::FLOATVAL_LOWEST)
-            $microseconds = floatval(Data::FLOATVAL_LOWEST);
+            $microseconds = Data::FLOATVAL_LOWEST;
 
         return $microseconds;
     }
@@ -467,84 +439,65 @@ class DateTime extends \DateTime
     /**
      * Получить значение микросекунд в виде строки
      *
-     * @param float                  $microseconds
-     * @param int                    $digits
-     * @param bool|string|\Exception $throwException [опция] Для указания, выкидывать ли исключение, если есть ошибки и можно указать текст для исключения
+     * @param float|int $microseconds
+     * @param int       $digits
      *
      * @return string
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function convertMicrosecondsToString ($microseconds, $digits = 6, $throwException = true)
+    public static function convertMicrosecondsToString (float|int $microseconds, int $digits = 6) : string
     {
-        $microseconds = static::checkMicroseconds($microseconds, $digits, $throwException);
+        $microseconds = static::checkMicroseconds($microseconds);
 
-        $digits = Data::getInteger($digits, "Неверное указано значение аргумента кол-ва цифр микросекунд!", 1, 8);
-
-        if ($digits === false)
-            return $digits;
-
-        return str_pad(substr((string)$microseconds, 2, $digits), $digits, "0", STR_PAD_RIGHT);
+        return '0.' . substr((string)$microseconds, 2, $digits);
     }
 
     /**
      * Получить дробное значение микросекунд из строки
      *
-     * @param string|float|int $microsecondsString
+     * @param string|float|int $microseconds
      *
      * @return float
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function convertMicrosecondsStringToFloat ($microsecondsString, $throwException = true)
+    public static function convertMicrosecondsStringToFloat (string|float|int $microseconds) : float
     {
-        if (is_integer($microsecondsString))
-            return 0.0;
-
-        if (is_float($microsecondsString)) {
-            if ($microsecondsString == 0.0) {
-                return $microsecondsString;
-
-            } else {
-                if ($microsecondsString < Data::FLOATVAL_LOWEST)
-                    $microsecondsString = floatval(Data::FLOATVAL_LOWEST);
-
-                $microsecondsString = (string) (intval($microsecondsString) - $microsecondsString);
-            }
+        if (! is_string($microseconds)) {
+            $microseconds = (string) $microseconds;
         }
 
-        $exception = new \Exception("Неверно указано значение аргумента микросекунд для получения дробного значения микросекунд из строки");
+        if (strpos($microseconds, '.')) {
+            $parts = explode(".", $microseconds);
+        }
 
-        $microsecondsString = Text::prepareSingleLine($microsecondsString, true, $exception . "!");
+        $microseconds = (int) $microseconds;
 
-        if (!preg_match("/^(?:-?\d+(\.|,))?\d{1,8}$/", $microsecondsString))
-            throw new \Exception( Data::getTypeRu($microsecondsString, true, 150) . "!");
+        return self::checkMicroseconds($microseconds);
+    }
 
-        if (preg_match("/\.|,/", $microsecondsString))
-            $microsecondsString = preg_split("/\.|,/", $microsecondsString)[1];
+    /**
+     * Получить объект Date (только дата)
+     *
+     * @param string|float|int $microseconds
+     *
+     * @return int
+     */
+    public static function convertMicrosecondsToInteger (string|float|int $microseconds) : int
+    {
+        $microseconds = static::checkMicroseconds($microseconds);
 
-        $micro = (float) ("0." . $microsecondsString);
+        $microseconds = explode('.', (string) $microseconds)[1];
 
-        return $micro;
+        return (int) $microseconds;
     }
 
     /**
      * Получить дробное значение разницы двух значений микросекунд
      *
-     * @param string|int $micro1
-     * @param string|int $micro2
+     * @param float|string|int $micro1
+     * @param float|string|int $micro2
      *
      * @return float
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function getMicrosecondsDiff ($micro1, $micro2)
+    public static function getMicrosecondsDiff (float|string|int $micro1, float|string|int $micro2) : float
     {
         $micro1 = static::convertMicrosecondsStringToFloat($micro1);
         $micro2 = static::convertMicrosecondsStringToFloat($micro2);
@@ -558,12 +511,8 @@ class DateTime extends \DateTime
      * @param int $digits Кол-во символов
      *
      * @return string
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function getCurrentMicrosecondsAsString ($digits = 6)
+    public static function getCurrentMicrosecondsAsString (int $digits = 6) : string
     {
         return static::convertMicrosecondsToString(static::getCurrentMicroseconds($digits), $digits, "Взятие микросекунд системы в виде строки.");
     }
@@ -571,9 +520,9 @@ class DateTime extends \DateTime
     /**
      * Взять микросекунды
      *
-     * @return float
+     * @return int
      */
-    public function getMicroseconds ()
+    public function getMicroseconds () : int
     {
         return $this->microseconds;
     }
@@ -584,30 +533,22 @@ class DateTime extends \DateTime
      * @param int $digits
      *
      * @return string
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function getMicrosecondsAsString ($digits = 6)
+    public function getMicrosecondsAsString (int $digits = 6) : string
     {
-        return static::convertMicrosecondsToString($this->microseconds, $digits, "Взятие микросекунд в виде строки для объекта «{$this}/{$this->getMicroseconds()}».");
+        return static::convertMicrosecondsToString($this->microseconds);
     }
 
     /**
      * Установить микросекунды
      *
-     * @param float $microseconds
+     * @param int $microseconds
      *
      * @return $this
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function setMicroseconds ($microseconds)
+    public function setMicroseconds (int $microseconds) : static
     {
-        $this->microseconds = self::checkMicroseconds($microseconds);
+        $this->microseconds = self::convertMicrosecondsToInteger($microseconds);
 
         return $this;
     }
@@ -615,23 +556,23 @@ class DateTime extends \DateTime
     /**
      * {@inheritdoc}
      *
-     * @param int   $hour
-     * @param int   $minute
-     * @param int   $second
-     * @param float $microseconds
+     * @param int $hour
+     * @param int $minute
+     * @param int $second
+     * @param int $microsecond
      *
      * @return $this
      * @link http://php.net/manual/en/datetime.settime.php
      */
-    public function setTime ($hour, $minute, $second = 0, $microseconds = 0)
+    public function setTime (int $hour, int $minute, int $second = 0, int $microsecond = 0) : static
     {
         if (!$this->isChangeable())
-            throw new BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
+            throw new \BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
 
         parent::setTime($hour, $minute, $second);
 
-        if ($microseconds)
-            $this->setMicroseconds($microseconds);
+        if ($microsecond)
+            $this->setMicroseconds($microsecond);
 
         return $this;
     }
@@ -639,28 +580,28 @@ class DateTime extends \DateTime
     /**
      * {@inheritdoc}
      *
-     * @param string $string
-     * @see https://www.php.net/manual/ru/datetime.formats.relative.php
+     * @param string $modifier
      *
-     * @return false|$this
+     * @return self
+     * @see https://www.php.net/manual/ru/datetime.formats.relative.php
      */
-    public function modify ($string)
+    public function modify (string $modifier) : static
     {
         if (!$this->isChangeable())
-            throw new BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
+            throw new \BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
 
         $micro = 0.0;
         $pattern = "/(?<sign>\+|\-)?(?<micro>(0\.)?\d+)\s+micro(second(s)?)?/u";
-        if (preg_match($pattern, $string, $matches))
+        if (preg_match($pattern, $modifier, $matches))
         {
-            $string = trim(preg_replace($pattern, "", $string));
+            $modifier = trim(preg_replace($pattern, "", $modifier));
             $micro = static::convertMicrosecondsStringToFloat($matches["micro"]);
-            if ($matches["micro"] == "-")
+            if ($matches["sign"] == "-")
                 $micro = -$micro;
         }
 
-        if ($string)
-            parent::modify($string);
+        if ($modifier)
+            parent::modify($modifier);
 
         if ($micro)
         {
@@ -688,7 +629,7 @@ class DateTime extends \DateTime
      * @deprecated Используй передачу объекта new DataTime()
      * @return string
      */
-    public static function getCurrentFormatMySQL ()
+    public static function getCurrentFormatMySQL () : string
     {
         return date(static::MYSQL_FORMAT);
     }
@@ -697,12 +638,8 @@ class DateTime extends \DateTime
      * MySQL формат с микросекундами
      *
      * @return string
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function getCurrentFormatMySQLWithMicro ()
+    public static function getCurrentFormatMySQLWithMicro () : string
     {
         return (new static(null, null, true))->format(static::MYSQL_FORMAT_WITH_MICRO);
     }
@@ -712,7 +649,7 @@ class DateTime extends \DateTime
      * @example 05.01.1970 09:15
      * @return string
      */
-    public function formatDigits ()
+    public function formatDigits () : string
     {
         return $this->format('d.m.Y H:i');
     }
@@ -722,7 +659,7 @@ class DateTime extends \DateTime
      *
      * @return string
      */
-    public function formatMySQL ()
+    public function formatMySQL () : string
     {
         return $this->format(static::MYSQL_FORMAT);
     }
@@ -731,12 +668,8 @@ class DateTime extends \DateTime
      * Возвращает строку даты-времени в формате MySQL с микросекундами
      *
      * @return string
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function formatMySQLWithMicro ()
+    public function formatMySQLWithMicro () : string
     {
         return $this->format(static::MYSQL_FORMAT_WITH_MICRO);
     }
@@ -745,7 +678,7 @@ class DateTime extends \DateTime
      * Приведение типа к дате
      * @return Date
      */
-    public function convertToDate (): Date
+    public function convertToDate () : Date
     {
         return new Date($this);
     }
@@ -755,7 +688,7 @@ class DateTime extends \DateTime
      * @example 05 января 1970 г. в 09:15
      * @return string
      */
-    public function __toString ()
+    public function __toString () : string
     {
         return $this->format('d F Y г. в H:i');
     }
@@ -767,7 +700,7 @@ class DateTime extends \DateTime
      *
      * @return string[]
      */
-    public static function getAllMonthsList ($locale = 'ru_RU')
+    public static function getAllMonthsList (string $locale = 'ru_RU') : array
     {
         $currentTimeLocale = setlocale(LC_TIME, 0);
         setlocale (LC_ALL, $locale .'.UTF-8');
@@ -792,30 +725,30 @@ class DateTime extends \DateTime
      * {@inheritdoc}
      * @var string|int|\DateTimeInterface $dateTime
      *
-     * @return \Parus\DateInterval
+     * @return \Sept\Common\DateInterval
      */
-    public function diff ($dateTime = "now", $absolute = false)
+    public function diff (string|int|\DateTimeInterface $dateTime = "now", $absolute = false) : DateInterval
     {
         $dateTime = static::get($dateTime);
 
         $micro = static::getMicrosecondsDiff($this->getMicroseconds(), $dateTime->format("u"));
         $parentInterval = parent::diff($dateTime, $absolute);
 
-        return DateInterval::convertFrom($parentInterval, $micro);
+        return DateInterval::convertFrom($parentInterval, DateTime::convertMicrosecondsToInteger($micro));
     }
 
     /**
      * Интервал до даты в виде читаемой строки
      *
      * @param null|string|\DateTimeInterface $dateTime Дата с которой сравнивать
-     * @param boolean               $asString Получить строку, иначе получить объект \Parus\DateTimeDiff
+     * @param boolean                        $asString Получить строку, иначе получить объект \Sept\Common\DateTimeDiff
      *
-     * @return \Parus\DateTimeDiff|string
-     * @see \Parus\DateTimeDiff
+     * @return \Sept\Common\DateTimeDiff|string
+     * @see \Sept\Common\DateTimeDiff
      */
-    public function smart ($dateTime = "now", $asString = true)
+    public function smart (null|string|\DateTimeInterface $dateTime = "now", bool $asString = true) : string|DateTimeDiff
     {
-        $diff = new DateTimeDiff($this,$this->getTimezone(),$dateTime);
+        $diff = new DateTimeDiff($this, $this->getTimezone(), $dateTime);
 
         return $asString ? $diff->getSmart() : $diff;
     }
@@ -823,28 +756,28 @@ class DateTime extends \DateTime
     /**
      * Объект для выведения интервала дат
      *
-     * @param null|string|\DateTimeInterface $dateTime Дата с которой сравнивать
+     * @param null|string|\DateTimeInterface $dateTimeTo Дата с которой сравнивать
      *
-     * @return \Parus\DateTimeDiff|string
+     * @return \Sept\Common\DateTimeDiff
      *
-     * @see \Parus\DateTimeDiff
+     * @see \Sept\Common\DateTimeDiff
      */
-    public function getDiff ($dateTime = "now")
+    public function getDiff (\DateTimeInterface|string|null $dateTimeTo = "now") : DateTimeDiff
     {
-        return new DateTimeDiff($this, $this->getTimezone(), $dateTime);
+        return new DateTimeDiff($this, $this->getTimezone(), $dateTimeTo);
     }
 
     /**
      * Получить массив с днями недели,
      * от 1 (понедельник) до 7 (воскресенье)
      *
-     * @param integer $day        [опция] Запрос на конкретный день, от 1 (понедельник) до 7 (воскресенье)
-     * @param bool    $accusative [опция] Получить массив с названиями дней недели в Винительном падеже
+     * @param null|integer $day        Запрос на конкретный день, от 1 (понедельник) до 7 (воскресенье)
+     * @param bool         $accusative Получить массив с названиями дней недели в Винительном падеже
      *
      * @return string|string[]
      */
     static
-    function getWeekDays ($day = null, $accusative = false)
+    function getWeekDays (int $day = null, bool $accusative = false) : string|array
     {
         if (!$accusative)
             return $day ? static::WEEK_DAYS_RU[$day-1] : static::WEEK_DAYS_RU;
@@ -877,12 +810,14 @@ class DateTime extends \DateTime
      * $dateA &gt; $dateB returns &gt; 0
      * </pre>
      *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
-     *
-     * @see   \Parus\Date::compare()
+     * @see   \Sept\Common\Date::compare()
      */
-    public static function compare ($dateA, $dateB, $timeZone = null, $withMicro = null)
+    public static function compare (
+        string|\DateTimeInterface $dateA,
+        string|\DateTimeInterface $dateB,
+        null|string|\DateTimeZone $timeZone = null,
+        null|bool $withMicro = null
+    ) : float|int
     {
         if (is_string($dateA)) {
             $dateA = new static($dateA);
@@ -924,16 +859,13 @@ class DateTime extends \DateTime
     /**
      * Сравнивает массив дат и вернуть наибольшую
      *
-     * @param \DateTimeInterface[]|\Parus\DateTimeInterface[] $dateTimes
-     * @param null|\DateTimeZone            $timeZone
-     * @param null|bool                     $withMicro Сравнивать с микросекундами
+     * @param \DateTimeInterface[] $dateTimes
+     * @param null|\DateTimeZone   $timeZone
+     * @param null|bool            $withMicro Сравнивать с микросекундами
      *
-     * @return \Parus\DateTime
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return \Sept\Common\DateTime
      */
-    public static function max ($dateTimes = [], $timeZone = null, $withMicro = null)
+    public static function max (array $dateTimes = [], null|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : static
     {
         Data::typeOf($dateTimes, Data::TYPE_ARRAY, "Неверное значение аргумента массива временных меток для сравнения и получения наибольшей!");
 
@@ -965,15 +897,12 @@ class DateTime extends \DateTime
      * Сравнение даты (даты-время) с другой
      *
      * @param string|\DateTimeInterface $date      Дата, с которой сравнивается текущая
-     * @param string|\DateTimeZone      $timeZone  Временная зона для сравнения (по умолчанию — Europe/Moscow)
+     * @param null|string|\DateTimeZone $timeZone  Временная зона для сравнения (по умолчанию — Europe/Moscow)
      * @param null|bool                 $withMicro Сравнивать с микросекундами
      *
      * @return int Вывод аналогичен статичному методу {@link DateTime::compare()}
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function compareWith ($date, $timeZone = null, $withMicro = null)
+    public function compareWith (string|\DateTimeInterface $date, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : int
     {
         return static::compare($this, $date, $timeZone, $withMicro);
     }
@@ -983,15 +912,12 @@ class DateTime extends \DateTime
      *
      * @param string|\DateTimeInterface $dateA     Дата А
      * @param string|\DateTimeInterface $dateB     Дата Б
-     * @param string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
+     * @param null|string|\DateTimeZone $timeZone  Не используется (нужно для потомка класса — Date)
      * @param null|bool                 $withMicro Сравнивать с микросекундами
      *
      * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function isEqual ($dateA, $dateB, $timeZone = null, $withMicro = null)
+    public static function isEqual (string|\DateTimeInterface $dateA, string|\DateTimeInterface $dateB, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : bool
     {
         return (static::compare($dateA, $dateB, $timeZone, $withMicro) == 0);
     }
@@ -1000,15 +926,12 @@ class DateTime extends \DateTime
      * Совпадает ли дата (дата-время) с другой
      *
      * @param string|\DateTimeInterface $date      Дата, с которой сравнивается текущая
-     * @param string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
+     * @param null|string|\DateTimeZone $timeZone  Не используется (нужно для потомка класса — Date)
      * @param null|bool                 $withMicro Сравнивать с микросекундами
      *
      * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public function isEqualWith ($date, $timeZone = null, $withMicro = null)
+    public function isEqualWith (string|\DateTimeInterface $date, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : bool
     {
         return static::isEqual($this, $date, $timeZone, $withMicro);
     }
@@ -1022,19 +945,16 @@ class DateTime extends \DateTime
      *                      [+-]int/first/second/third/fourth/fifth/sixth/seventh/eighth/ninth/tenth/eleventh/twelfth/next/last/previous/this
      *                      year/month/week
      *
-     * @return \Parus\DateTime
-     *
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return \Sept\Common\DateTime
      */
-    public function toFirstDayOf ($dayOf = "this month")
+    public function toFirstDayOf (string $dayOf = "this month") : static
     {
         $dayOf = Text::prepareSingleLine($dayOf, true, "Неверно указано значение аргумента указывающего на запрашиваемый период для установки временной метки на первый день: недели, месяца, года!");
 
         $this->modify("first day of {$dayOf}");
 
-        // Для \Parus\Date, а то меняет время:
-        if (is_a($this, 'Parus\Date'))
+        // Для \Sept\Common\Date, а то меняет время:
+        if (is_a($this, 'Sept\Common\Date'))
             $this->setTime(0, 0);
 
         return $this;
@@ -1049,40 +969,37 @@ class DateTime extends \DateTime
      *                      [+-]int/first/second/third/fourth/fifth/sixth/seventh/eighth/ninth/tenth/eleventh/twelfth/next/last/previous/this
      *                      year/month/week
      *
-     * @return \Parus\DateTime
-     *
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return \Sept\Common\DateTime
      */
-    public function toLastDayOf ($dayOf = "this month")
+    public function toLastDayOf (string $dayOf = "this month") : static
     {
         $dayOf = Text::prepareSingleLine($dayOf, true, "Неверно указано значение аргумента указывающего на запрашиваемый период для установки временной метки на последний день: недели, месяца, года!");
 
-        // Для \Parus\Date, а то меняет время:
+        // Для \Sept\Common\Date, а то меняет время:
         $this->modify("last day of {$dayOf}");
 
-        if (is_a($this, 'Parus\Date')) {
-            $this->setTime(0, 0);
+        if (is_a($this, Date::class)) {
+            $this->setTime(0, 0, 0 , 0);
         }
 
         return $this;
     }
 
     /**
-     * Получить объект DateTime (дата+время) без Parus, но с микросекундами (если они есть)
+     * Получить объект DateTime (дата+время) без Sept\Common, но с микросекундами (если они есть)
      *
      * @return \DateTime
      */
-    public function getBaseClass ()
+    public function getBaseClass () : \DateTime
     {
         return \DateTime::createFromFormat(static::MYSQL_FORMAT_WITH_MICRO, $this->formatMySQLWithMicro(), $this->getTimezone());
     }
 
     /**
      * Получить объект DateTime (дата+время)
-     * @return \Parus\DateTime
+     * @return \Sept\Common\DateTime
      */
-    public function getDateTime ()
+    public function getDateTime () : self
     {
         return $this;
     }
@@ -1090,11 +1007,9 @@ class DateTime extends \DateTime
     /**
      * Сконвертировать и получить объект Date (только дата)
      *
-     * @return \Parus\Date
-     *
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return \Sept\Common\Date
      */
-    public function getDate ()
+    public function getDate () : Date
     {
         return Date::get($this->format(Date::MYSQL_FORMAT), $this->getTimezone());
     }
@@ -1102,11 +1017,11 @@ class DateTime extends \DateTime
     /**
      * Попадает ли заданное время в заданный диапазон?
      * Время начала и окончания проверяется _включительно_ (как в MySQL)!
-     * @param string|\DateTimeInterface $begin Начало
-     * @param string|\DateTimeInterface $end   Окончания
+     * @param null|string|\DateTimeInterface $begin Начало
+     * @param null|string|\DateTimeInterface $end   Окончания
      * @return bool
      */
-    function isBetween ($begin = null, $end = null)
+    function isBetween (null|string|\DateTimeInterface $begin = null, null|string|\DateTimeInterface $end = null) : bool
     {
         if ($begin and is_string($begin)) {
             $begin = new static($begin);
@@ -1125,56 +1040,50 @@ class DateTime extends \DateTime
 
     /**
      * Меньше переданной даты
-     * @param string|\DateTimeInterface $date Дата
+     * @param null|string|\DateTimeInterface $date Дата
      * @return bool
      */
-    function isBefore ($date)
+    function isBefore (null|string|\DateTimeInterface $date) : bool
     {
         return $this->compareWith($date) < 0;
     }
 
     /**
      * Больше переданной даты
-     * @param string|\DateTimeInterface $date Дата
+     * @param null|string|\DateTimeInterface $date Дата
      * @return bool
      */
-    function isAfter ($date)
+    function isAfter (null|string|\DateTimeInterface $date) : bool
     {
         return $this->compareWith($date) > 0;
     }
 
     /**
      * Время в будущем?
-     * \Parus\DateTime::isDateTimeInFuture($dateTime);
+     * \Sept\Common\DateTime::isDateTimeInFuture($dateTime);
      *
-     * @param string|\DateTimeInterface $dateTime
-     * @param string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
-     * @param null|bool                 $withMicro Сравнивать с микросекундами
+     * @param null|string|\DateTimeInterface $dateTime
+     * @param null|string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
+     * @param null|bool                      $withMicro Сравнивать с микросекундами
      *
      * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function isDateTimeInFuture ($dateTime, $timeZone = null, $withMicro = null)
+    public static function isDateTimeInFuture (null|string|\DateTimeInterface $dateTime, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : bool
     {
         return (new static())->compareWith($dateTime, $timeZone, $withMicro) < 0;
     }
 
     /**
      * Время в прошлом?
-     * \Parus\DateTime::isInFuture($dateTime);
+     * \Sept\Common\DateTime::isInFuture($dateTime);
      *
-     * @param string|\DateTimeInterface $dateTime
-     * @param string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
-     * @param null|bool                 $withMicro Сравнивать с микросекундами
+     * @param null|string|\DateTimeInterface $dateTime
+     * @param null|string|\DateTimeZone      $timeZone  Не используется (нужно для потомка класса — Date)
+     * @param null|bool                      $withMicro Сравнивать с микросекундами
      *
      * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function isDateTimeInPast ($dateTime, $timeZone = null, $withMicro = null)
+    public static function isDateTimeInPast (null|string|\DateTimeInterface $dateTime, null|string|\DateTimeZone $timeZone = null, null|bool $withMicro = null) : bool
     {
         return (new static())->compareWith($dateTime, $timeZone, $withMicro) > 0;
     }
@@ -1183,7 +1092,7 @@ class DateTime extends \DateTime
      * Время в будущем?
      * @return bool
      */
-    function inFuture ()
+    function inFuture () : bool
     {
         return (bool) ($this->compareWith(new static) > 0);
     }
@@ -1192,7 +1101,7 @@ class DateTime extends \DateTime
      * Время в прошлом?
      * @return bool
      */
-    function inPast ()
+    function inPast () : bool
     {
         return (bool) ($this->compareWith(new static) < 0);
     }
@@ -1200,9 +1109,9 @@ class DateTime extends \DateTime
     /**
      * @param bool|null $changeable
      *
-     * @return \Parus\DateTime
+     * @return \Sept\Common\DateTime
      */
-    function getClone (bool $changeable = null)
+    function getClone (bool $changeable = null) : static
     {
         $clone = clone $this;
         if ($changeable !== null)
@@ -1220,16 +1129,18 @@ class DateTime extends \DateTime
      * @param null|bool                   $withMicro    Сравнивать с микросекундами
      *
      * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    static function isActualPeriod ($dateTimeFrom = null, $dateTimeTo = null, $throwException = true, $withMicro = null)
+    static function isActualPeriod (
+        string|\DateTimeInterface|false|null $dateTimeFrom = null,
+        string|\DateTimeInterface|false|null $dateTimeTo = null,
+        bool|string|\Exception$throwException = true,
+        null|bool $withMicro = null
+    ) : bool
     {
         if ($dateTimeFrom and $dateTimeTo and static::compare($dateTimeFrom, $dateTimeTo, null, $withMicro) > 0)
         {
             if ($throwException)
-                throw new RuntimeException(...\Parus\Exception\Exception::getArguments("Неверно указаны даты интервала: дата завершения «{$dateTimeTo->format(static::MYSQL_FORMAT)}» не должна быть раньше даты начала «{$dateTimeFrom->format(static::MYSQL_FORMAT)}»!", $throwException));
+                throw new \RuntimeException("Неверно указаны даты интервала: дата завершения «{$dateTimeTo->format(static::MYSQL_FORMAT)}» не должна быть раньше даты начала «{$dateTimeFrom->format(static::MYSQL_FORMAT)}»!");
 
             return false;
         }
@@ -1255,21 +1166,18 @@ class DateTime extends \DateTime
      * Вывести строкой интервал дат [и времени]
      *
      * 8 + 16 + 32 = 56 / дни, месяца, годы
-     * 1 + 2 + 4 + 8 + 16 + 32 = 63 / секуды, минуты, часы, дни, месяца, годы
-     * 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 = 255 / + века и тысячилетия
+     * 1 + 2 + 4 + 8 + 16 + 32 = 63 / секунды, минуты, часы, дни, месяца, годы
+     * 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 = 255 / + века и тысячелетия
      *
-     * @param \DateTimeInterface|\Parus\DateTime|\Parus\Date $dateTimeFrom Дата начала
-     * @param \DateTimeInterface|\Parus\DateTime|\Parus\Date $dateTimeTo   Дата окончания
-     * @param null|integer                          $format       Побитовый формат вывдения
-     * @param boolean                               $checkYear    Проверять год, если совпадает с годом сегодняшним, то не отображать
-     * @param string                                $glue
+     * @param \DateTimeInterface $dateTimeFrom Дата начала
+     * @param \DateTimeInterface $dateTimeTo   Дата окончания
+     * @param null|integer       $format       Побитовый формат выведения
+     * @param boolean            $checkYear    Проверять год, если совпадает с годом сегодняшним, то не отображать
+     * @param string             $glue
      *
-     * @return bool
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return string
      */
-    public static function getIntervalString ($dateTimeFrom, $dateTimeTo, $format = null, $checkYear = true, $glue = "")
+    public static function getIntervalString (\DateTimeInterface $dateTimeFrom, \DateTimeInterface $dateTimeTo, null|int $format = null, bool $checkYear = true, string $glue = "") : string
     {
         if (static::compare($dateTimeFrom, $dateTimeTo) > 0)
             [$dateTimeFrom, $dateTimeTo] = [ $dateTimeTo, $dateTimeFrom ];
@@ -1428,13 +1336,11 @@ class DateTime extends \DateTime
     /**
      * Получить разницу в днях для даты по Юлианскому календарю
      *
-     * @param string|\DateTimeInterface|\Parus\DateTime $dateTime
+     * @param string|\DateTimeInterface $dateTime
      *
      * @return float|int
-     *
-     * @throws \Parus\Exception\BadMethodCallException
      */
-    public static function getJulianCalendarDiffDays ($dateTime)
+    public static function getJulianCalendarDiffDays (string|\DateTimeInterface $dateTime) : float|int
     {
         $dateTime = static::get($dateTime);
 
@@ -1462,11 +1368,11 @@ class DateTime extends \DateTime
     /**
      * Дата указывает на временную метку до введения Григорианского календаря
      *
-     * @param string|\DateTimeInterface|\Parus\DateTime $dateTime
+     * @param string|\DateTimeInterface $dateTime
      *
      * @return boolean
      */
-    public static function isBeforeGregorianStart ($dateTime)
+    public static function isBeforeGregorianStart (string|\DateTimeInterface $dateTime) : bool
     {
         $dateTime = static::get($dateTime);
 
@@ -1482,11 +1388,11 @@ class DateTime extends \DateTime
     /**
      * Дата указывает на временную метку после введения Григорианского календаря в России
      *
-     * @param string|\DateTimeInterface|\Parus\DateTime $dateTime
+     * @param string|\DateTimeInterface $dateTime
      *
      * @return boolean
      */
-    public static function isAfterGregorianStartInRussia ($dateTime)
+    public static function isAfterGregorianStartInRussia (string|\DateTimeInterface $dateTime) : bool
     {
         $dateTime = static::get($dateTime);
 
@@ -1507,9 +1413,9 @@ class DateTime extends \DateTime
     /**
      * Получить дату по Юлианскому календарю
      *
-     * @return \Parus\DateTime
+     * @return static
      */
-    public function getInJulianCalendar ()
+    public function getInJulianCalendar () : static
     {
         $rc = static::getJulianCalendarDiffDays($this);
 
@@ -1523,12 +1429,54 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @inheritdoc
-     * @see \Parus\DateTime::getByJulianCalendar()
+     * @see DateTime::getByJulianCalendar()
      */
-    public function getOrthodox ()
+    public function getOrthodox () : static
     {
         return $this->getInJulianCalendar();
+    }
+
+    /**
+     * Получить строку даты с указанием даты по Юлианскому календарю
+     *
+     * @param int $first
+     * @param int $formatWith
+     *
+     * @return string
+     * @see https://www.php.net/manual/ru/function.cal-info.php
+     */
+    public function getAsStringWithJulian (int $first = CAL_GREGORIAN, int $formatWith = DateTimeDiff::MONTHS) : string
+    {
+        $julian = $this->getInJulianCalendar();
+        $second = $this;
+
+        $sp = Text::SPACE_NOBR;
+
+        if ($first == CAL_JULIAN)
+            $first = $julian;
+        else
+        {
+            $first = $this;
+            $second = $julian;
+        }
+
+        if ($formatWith & DateTimeDiff::YEARS or $second->format("Y") != $first->format("Y"))
+            $string = $first->format("j{$sp}F Y{$sp}года") . " ({$second->format("j{$sp}F Y{$sp}года")})";
+        else
+        {
+            if ($formatWith & DateTimeDiff::MONTHS or $second->format("F") != $first->format("F"))
+                $string = $first->format("j{$sp}F") . " ({$second->format("j{$sp}F")})" . $first->format(" Y{$sp}года");
+            else
+            {
+                if ($formatWith & DateTimeDiff::DAYS or $second->format("j") != $first->format("j"))
+                    $string = $first->format("j{$sp}({$second->format("j")}){$sp}F Y{$sp}года");
+
+                else
+                    $string = $first->format("j{$sp}F Y{$sp}года");
+            }
+        }
+
+        return $string;
     }
 
     /**
@@ -1538,29 +1486,9 @@ class DateTime extends \DateTime
      *
      * @return string
      */
-    public function getWithJulian ($formatWith = DateTimeDiff::MONTHS)
+    public function getWithJulian (int $formatWith = DateTimeDiff::MONTHS) : string
     {
-        $julian = $this->getInJulianCalendar();
-
-        $sp = Text::SPACE_NOBR;
-
-        if ($formatWith & DateTimeDiff::YEARS or $julian->format("Y") != $this->format("Y"))
-            $string = $this->format("j{$sp}F Y{$sp}года") . " ({$julian->format("j{$sp}F Y{$sp}года")})";
-        else
-        {
-            if ($formatWith & DateTimeDiff::MONTHS or $julian->format("F") != $this->format("F"))
-                $string = $this->format("j{$sp}F") . " ({$julian->format("j{$sp}F")})" . $this->format(" Y{$sp}года");
-            else
-            {
-                if ($formatWith & DateTimeDiff::DAYS or $julian->format("j") != $this->format("j"))
-                    $string = $this->format("j{$sp}({$julian->format("j")}){$sp}F Y{$sp}года");
-
-                else
-                    $string = $this->format("j{$sp}F Y{$sp}года");
-            }
-        }
-
-        return $string;
+        return $this->getAsStringWithJulian(CAL_GREGORIAN, $formatWith);
     }
 
     /**
@@ -1570,36 +1498,16 @@ class DateTime extends \DateTime
      *
      * @return string
      */
-    public function getJulianWithGregorian ($formatWith = DateTimeDiff::MONTHS)
+    public function getJulianWithGregorian (int $formatWith = DateTimeDiff::MONTHS) : string
     {
-        $julian = $this->getInJulianCalendar();
-        $sp = Text::SPACE_NOBR;
-
-        if ($formatWith & DateTimeDiff::YEARS or $this->format("Y") != $julian->format("Y")) {
-            $string = $julian->format("j{$sp}F Y{$sp}года") . " ({$this->format("j{$sp}F Y{$sp}года")})";
-
-        } else {
-            if ($formatWith & DateTimeDiff::MONTHS or $this->format("F") != $julian->format("F")) {
-                $string = $julian->format("j{$sp}F") . " ({$this->format("j{$sp}F")})" . $julian->format(" Y{$sp}года");
-
-            } else {
-                if ($formatWith & DateTimeDiff::DAYS or $this->format("j") != $julian->format("j")) {
-                    $string = $julian->format("j{$sp}({$this->format("j")}){$sp}F Y{$sp}года");
-                } else {
-                    $string = $julian->format("j{$sp}F Y{$sp}года");
-                }
-            }
-
-        }
-
-        return $string;
+        return $this->getAsStringWithJulian(CAL_JULIAN, $formatWith);
     }
 
     /**
      * Получить значение метку "Работать с микросекундами"
      * @return bool
      */
-    public static function isWithMicro ()
+    public static function isWithMicro () : bool
     {
         return self::$withMicro;
     }
@@ -1608,12 +1516,8 @@ class DateTime extends \DateTime
      * Установить значение метку "Работать с микросекундами"
      *
      * @param bool $withMicro
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
-    public static function setWithMicro ($withMicro)
+    public static function setWithMicro (bool $withMicro) : void
     {
         $withMicro = Data::typeOf($withMicro, [ Data::TYPE_BOOLEAN ], "Неверно указано значение аргумента для указания статичной метки – использовать ли микросекунды при работе с временными метками!");
 
@@ -1625,7 +1529,7 @@ class DateTime extends \DateTime
      *
      * @return $this
      */
-    function setYear (int $yearNumber)
+    function setYear (int $yearNumber) : static
     {
         return $this->setDate($yearNumber, (int) $this->format("n"), (int) $this->format("j"));
     }
@@ -1636,7 +1540,7 @@ class DateTime extends \DateTime
      *
      * @return $this
      */
-    function setMonthAndDay (int $monthsNumber, int $dayOfMonth)
+    function setMonthAndDay (int $monthsNumber, int $dayOfMonth) : static
     {
         return $this->setDate((int) $this->format("Y"), $monthsNumber, $dayOfMonth);
     }
@@ -1646,7 +1550,7 @@ class DateTime extends \DateTime
      *
      * @return $this
      */
-    function setWeekNumber (int $weekNumber)
+    function setWeekNumber (int $weekNumber) : static
     {
         Data::getInteger($weekNumber, "В году не более 53-х недель! 53 бывает редко, обычно 52.", 0, 53);
 
@@ -1662,7 +1566,7 @@ class DateTime extends \DateTime
      * @var int $dayOfWeek
      * @return $this
      */
-    function setDayOfWeek (int $dayOfWeek)
+    function setDayOfWeek (int $dayOfWeek) : static
     {
         $currentDayNumberOfWeek = $this->format("N");
         $diff = $dayOfWeek - $currentDayNumberOfWeek;
@@ -1675,7 +1579,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToYearStart ()
+    function modifyToYearStart () : static
     {
         $this->modifyToDayStart();
         $this->setDate((int) $this->format("Y"), 1, 1);
@@ -1686,7 +1590,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToYearEnd ()
+    function modifyToYearEnd () : static
     {
         $this->modifyToDayEnd();
         $this->modify("last day of December");
@@ -1697,7 +1601,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToMonthStart ()
+    function modifyToMonthStart () : static
     {
         $this->modifyToDayStart();
         $this->setDate((int) $this->format("Y"), (int) $this->format("n"), 1);
@@ -1708,7 +1612,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToMonthEnd ()
+    function modifyToMonthEnd () : static
     {
         $this->modifyToDayEnd();
         $this->setDate((int) $this->format("Y"), (int) $this->format("n"), (int) $this->format("t"));
@@ -1719,7 +1623,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToWeekStart ()
+    function modifyToWeekStart () : static
     {
         if ($this->format("N") != 1)
             $this->modify("previous monday");
@@ -1732,7 +1636,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToWeekEnd ()
+    function modifyToWeekEnd () : static
     {
         if ($this->format("N") != 7)
             $this->modify("next sunday");
@@ -1745,7 +1649,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToDayStart ()
+    function modifyToDayStart () : static
     {
         return $this->setTime(0,0,0);
     }
@@ -1753,7 +1657,7 @@ class DateTime extends \DateTime
     /**
      * @return $this
      */
-    function modifyToDayEnd ()
+    function modifyToDayEnd () : static
     {
         return $this->setTime(23,59,59);
     }
@@ -1766,10 +1670,10 @@ class DateTime extends \DateTime
      * @return static
      * @link https://php.net/manual/en/datetime.setdate.php
      */
-    public function setDate ($year, $month, $day)
+    public function setDate (int $year, int $month, int $day) : static
     {
         if (!$this->isChangeable())
-            throw new BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
+            throw new \BadMethodCallException("У объекта временной метки «{$this->formatMySQL()}» указано, что нельзя менять! Можно клонировать объект и убрать метку о том, что нельзя менять!");
 
         parent::setDate($year, $month, $day);
         return $this;
@@ -1782,7 +1686,7 @@ class DateTime extends \DateTime
      *
      * @return boolean
      */
-    public function isDateTimeToday (\DateTimeInterface $dateTime)
+    public function isDateTimeToday (\DateTimeInterface $dateTime) : bool
     {
         $dayBegin = (new self)->modifyToDayStart();
         $dayEnd = (new self)->modifyToDayEnd();
@@ -1794,7 +1698,7 @@ class DateTime extends \DateTime
      * Проверять, попадает ли данная временная метка в сегодня
      * @return boolean
      */
-    public function isToday ()
+    public function isToday () : bool
     {
         return DateTime::isDateTimeToday($this);
     }

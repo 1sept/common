@@ -14,7 +14,7 @@ class DateInterval extends \DateInterval
 {
     /**
      * Разница микросекунд
-     * @var float
+     * @var int
      */
     public $micro;
 
@@ -28,16 +28,14 @@ class DateInterval extends \DateInterval
      */
     protected $totalDays = 0;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $totalSeconds = 0;
 
 
     /**
      * @param string $interval_spec
      */
-    public function __construct ($interval_spec)
+    public function __construct (string $interval_spec)
     {
         if (preg_match("/(?<micro>\d+)MICRO/" ,$interval_spec ,$matches))
         {
@@ -58,12 +56,12 @@ class DateInterval extends \DateInterval
 
     /**
      * Количество секунд в интервале
-     * @return int секунды
+     * @return string секунды
      */
-    public function format ($format)
+    public function format ($format) : string
     {
         if (preg_match("/%a/u" ,$format))
-            $format = preg_replace('/%a/u' ,$this->getTotalDays() ,$format);
+            $format = preg_replace('/%a/u', (string) $this->getTotalDays(), $format);
 
         return parent::format($format);
     }
@@ -72,7 +70,7 @@ class DateInterval extends \DateInterval
      * Количество секунд в интервале
      * @return int секунды
      */
-    public function toSeconds ()
+    public function toSeconds () : int
     {
         return $this->countTotalSeconds();
     }
@@ -82,11 +80,11 @@ class DateInterval extends \DateInterval
      * Конвертирует в объект данного класса
      *
      * @param \DateInterval $fromInterval Объект родительского класса
-     * @param float         $micro        Разница микросекунд
+     * @param int           $micro        Разница микросекунд
      *
-     * @return \Parus\DateInterval
+     * @return static
      */
-    public static function convertFrom(\DateInterval $fromInterval ,$micro = 0.0)
+    public static function convertFrom (\DateInterval $fromInterval, int $micro = 0) : static
     {
         if ($fromInterval instanceOf static) {
             return clone $fromInterval;
@@ -103,31 +101,28 @@ class DateInterval extends \DateInterval
     }
 
 
-    /**
-     * @return float
-     */
+
+    /** @return int */
     public
-    function getMicro ()
+    function getMicro () : int
     {
         return $this->micro;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getTotalSeconds ()
+    function getTotalSeconds () : int
     {
         return $this->totalSeconds;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function countTotalSeconds ()
+    function countTotalSeconds () : int
     {
         $reference = new \DateTimeImmutable;
         $endTime = $reference->add($this);
@@ -136,94 +131,85 @@ class DateInterval extends \DateInterval
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getTotalDays ()
+    function getTotalDays () : int
     {
         return $this->totalDays;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function countTotalDays ()
+    function countTotalDays () : int
     {
         if (!$this->getTotalSeconds())
             $this->countTotalSeconds();
 
-        return $this->totalDays = floor($this->getTotalSeconds() / (24 * 60 * 60));
+        return (int) $this->totalDays = floor($this->getTotalSeconds() / (24 * 60 * 60));
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getYears ()
+    function getYears () : int
     {
         return $this->y;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getMonths ()
+    function getMonths () : int
     {
         return $this->m;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getDays ()
+    function getDays () : int
     {
         return $this->d;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getHours ()
+    function getHours () : int
     {
         return $this->h;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getMinutes ()
+    function getMinutes () : int
     {
         return $this->i;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getSeconds ()
+    function getSeconds () : int
     {
         return $this->s;
     }
 
 
-    /**
-     * @return int
-     */
+
+    /** @return int */
     public
-    function getInvert ()
+    function getInvert () : int
     {
         return $this->invert;
     }

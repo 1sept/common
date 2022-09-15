@@ -21,7 +21,7 @@ namespace Sept\Common;
  *   [date] => 2017-01-19 06:06:21.000000
  *   [timezone_type] => 3
  *   [timezone] => Europe/Moscow
- *   [dateTo:protected] => Parus\DateTime Object
+ *   [dateTo:protected] => Sept\Common\DateTime Object
  *       (
  *           [microseconds:protected] => 0
  *           [date] => 2012-01-05 05:06:06.000000
@@ -30,7 +30,7 @@ namespace Sept\Common;
  *       )
  *
  *   [punctuality:protected] => 0
- *   [interval:protected] => Parus\DateInterval Object
+ *   [interval:protected] => Sept\Common\DateInterval Object
  *       (
  *           [micro] => 0
  *           [totalDays:protected] => 1840
@@ -89,62 +89,59 @@ namespace Sept\Common;
  */
 class DateTimeDiff extends DateTime
 {
-    /**
-     * @var integer
-     */
+    /** @var integer */
     const MICROSECONDS = 256;
-    /**
-     * @var integer
-     */
+
+    /** @var integer */
     const SECONDS = 1;
-    /**
-     * @var integer
-     */
+
+    /** @var integer */
     const MINUTES = 2;
-    /**
-     * @var integer
-     */
-    const HOURS   = 4;
-    /**
-     * @var integer
-     */
-    const DAYS    = 8;
-    /**
-     * @var integer
-     */
-    const MONTHS  = 16;
-    /**
-     * @var integer
-     */
-    const YEARS   = 32;
-    /**
-     * @var integer
-     */
-    const AGES    = 64;
-    /**
-     * @var integer
-     */
-    const MILS    = 128;
 
+    /** @var integer */
+    const HOURS = 4;
 
+    /** @var integer */
+    const DAYS = 8;
+
+    /** @var integer */
+    const MONTHS = 16;
+
+    /** @var integer */
+    const YEARS = 32;
+
+    /** @var integer */
+    const AGES = 64;
+
+    /** @var integer */
+    const MILS = 128;
+
+    /** @var <string, int> */
+    const TIME_UNITS = [
+        "microseconds" => self::MICROSECONDS,
+        "seconds"      => self::SECONDS,
+        "minutes"      => self::MINUTES,
+        "hours"        => self::HOURS,
+        "days"         => self::DAYS,
+        "months"       => self::MONTHS,
+        "years"        => self::YEARS,
+        "ages"         => self::AGES,
+        "millenniums"  => self::MILS,
+    ];
 
     /**
-    * @var DateTime
     * Если дата/время не указаны, то сравнивает с Московским временем, временем сервера
+    * @var self
     */
-    protected $dateTo;
-
-
+    protected $dateTimeTo;
 
     /**
     * @var integer Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
     */
     protected $punctuality;
 
-
-
     /**
-    * @var \Parus\DateInterval
+    * @var \Sept\Common\DateInterval
     * y - Количество лет.
     * m - Количество месяцев.
     * d - Количество дней.
@@ -159,14 +156,10 @@ class DateTimeDiff extends DateTime
     */
     protected $interval;
 
-
-
     /**
     * @var integer Если 1 – позже сравниваемой даты, 0 – ранее сравниваемой даты
     */
     protected $was;
-
-
 
     /**
     * @var string
@@ -174,23 +167,17 @@ class DateTimeDiff extends DateTime
     */
     protected $text;
 
-
-
     /**
     * @var string
     * Строка с указанием разницы во всех не нулевых измерителях
     */
     protected $allCounters;
 
-
-
     /**
     * @var string
     * Строка с датой
     */
     protected $dateString;
-
-
 
     /**
     * @var string
@@ -199,135 +186,93 @@ class DateTimeDiff extends DateTime
     protected $smart;
 
 
-
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $micros;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $seconds;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $minutes;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $hours;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $days;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $months;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $years;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $ages;
 
-    /**
-    * @var string
-    */
+    /** @var string */
     protected $mils;
 
 
 
-    /**
-    * @var integer
-    */
+    /** @var integer */
     public $totalSeconds;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalMinutes;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalHours;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalDays;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalMonths;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalYears;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalAges;
-    /**
-    * @var integer
-    */
+
+    /** @var integer */
     public $totalMils;
 
-    /**
-    * @var string
-    */
-    public $strTotalSeconds;
-    /**
-    * @var string
-    */
-    public $strTotalMinutes;
-    /**
-    * @var string
-    */
-    public $strTotalHours;
-    /**
-    * @var string
-    */
-    public $strTotalDays;
-    /**
-    * @var string
-    */
-    public $strTotalMonths;
-    /**
-    * @var string
-    */
-    public $strTotalYears;
-    /**
-    * @var string
-    */
-    public $strTotalAges;
-    /**
-    * @var string
-    */
-    public $strTotalMils;
+
+    /** @var string */
+    public string $strTotalSeconds;
+
+    /** @var string */
+    public string $strTotalMinutes;
+
+    /** @var string */
+    public string $strTotalHours;
+
+    /** @var string */
+    public string $strTotalDays;
+
+    /** @var string */
+    public string $strTotalMonths;
+
+    /** @var string */
+    public string $strTotalYears;
+
+    /** @var string */
+    public string $strTotalAges;
+
+    /** @var string */
+    public string $strTotalMils;
 
 
-    /**
-    * @var string
-    */
-    protected $past = "назад";
+    /** @var null|string */
+    protected ?string $past = "назад";
 
-    /**
-    * @var string
-    */
-    protected $will = "через";
+    /** @var null|string */
+    protected ?string $will = "через";
 
 
-    /**
-    * @var string[]
-    */
+    /** @var string[] */
     protected $fields = [
          "seconds"
         ,"minutes"
@@ -341,12 +286,9 @@ class DateTimeDiff extends DateTime
 
 
     /**
-     * @param string|\DateTime          $dateTime      Строка даты и времени, конвертируемая в объект даты и времени, для которого нужно вычислить разницу
+     * @param string|\DateTimeInterface $dateTime      Строка даты и времени, конвертируемая в объект даты и времени, для которого нужно вычислить разницу
      * @param null|string|\DateTimeZone $timeZone
      * @param null|string|\DateTime     $dateToCompare [опция] Дата и время с которыми сравнивать, если не указано, то сравнит с настоящим
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\InvalidArgumentException
      */
     function __construct ($dateTime = "now" ,$timeZone = null ,$dateToCompare = "now")
     {
@@ -359,25 +301,21 @@ class DateTimeDiff extends DateTime
     /**
      * Получить разницу между датами в формате читаемого текста
      *
-     * @param string|\DateTime $dateTo      Дата и время с которыми сравнивать
-     * @param integer          $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
+     * @param null|string|\DateTimeInterface $dateTimeTo  Дата и время с которыми сравнивать
+     * @param integer                        $punctuality Точность указания разницы, константы: SECONDS,MINUTES,HOURS,DAYS,MONTHS
      *
-     * @return $this
-     *
-     * @throws \Exception
-     * @throws \Parus\Exception\Exception
-     * @throws \Parus\Exception\InvalidArgumentException
+     * @return self
      */
-    function getDiff ($dateTo = "now" ,$punctuality = 0)
+    function getDiff (\DateTimeInterface|string|null $dateTimeTo = "now", int $punctuality = 0) : self
     {
-        if (!($dateTo instanceof parent))
-            $dateTo = new parent($dateTo);
+        if (!($dateTimeTo instanceof parent))
+            $dateTimeTo = new parent($dateTimeTo);
 
-        $this->dateTo = $dateTo;
+        $this->dateTimeTo = $dateTimeTo;
 
         $this->punctuality = $punctuality;
 
-        $this->interval = $dateTo->diff($this);
+        $this->interval = $dateTimeTo->diff($this);
 
         /**
          * 1 - было,
@@ -402,7 +340,7 @@ class DateTimeDiff extends DateTime
             $microInt = (int) $micros;
         }
 
-        $this->micros  = !$microInt ? "" : $micros . Data::countWordForm($microInt,["у" ,"ы" ,""],false,"микросекунд");
+        $this->micros  = !$microInt ? "" : ($micros . Data::countWordForm($microInt,["у" ,"ы" ,""],false,"микросекунд"));
         $this->seconds = !$seconds ? "" : Data::countWordForm($seconds,[ "у",   "ы",   ""    ],true,"секунд"    );
         $this->minutes = !$minutes ? "" : Data::countWordForm($minutes,[ "у",   "ы",   ""    ],true,"минут"     );
         $this->hours   = !$hours   ? "" : Data::countWordForm($hours,  [ "",    "а",   "ов"  ],true,"час"       );
@@ -412,18 +350,17 @@ class DateTimeDiff extends DateTime
         $this->ages    = !$ages    ? "" : Data::countWordForm($ages,   [ "",    "а",   "ов"  ],true,"век"       );
         $this->mils    = !$mils    ? "" : Data::countWordForm($mils,   [ "е",   "я",   "й"   ],true,"тысячелети");
 
-
-        $this->totalSeconds = abs($dateTo->getTimestamp() - $this->getTimestamp());
-        $this->totalMinutes = floor($this->getTotalSeconds() / 60);
-        $this->totalHours   = floor($this->getTotalMinutes() / 60);
-        $this->totalDays    = floor($this->getTotalHours() / 24);
-        $this->totalMonths  = floor($this->getTotalDays()  / 30);
+        $this->totalSeconds = abs($dateTimeTo->getTimestamp() - $this->getTimestamp());
+        $this->totalMinutes = (int) floor($this->getTotalSeconds() / 60);
+        $this->totalHours   = (int) floor($this->getTotalMinutes() / 60);
+        $this->totalDays    = (int) floor($this->getTotalHours() / 24);
+        $this->totalMonths  = (int) floor($this->getTotalDays()  / 30);
         // Февраль, 28/29 дней:
         if (!$this->totalMonths && $months)
             $this->totalMonths = $months;
         $this->totalYears   = $years;
-        $this->totalAges    = floor($this->getTotalYears() / 100);
-        $this->totalMils    = floor($this->getTotalYears() / 1000);
+        $this->totalAges    = (int) floor($this->getTotalYears() / 100);
+        $this->totalMils    = (int) floor($this->getTotalYears() / 1000);
 
 
         $this->strTotalSeconds = Data::countWordForm($this->getTotalSeconds(),["у"   ,"ы"   ,""    ],true,"секунд"    );
@@ -552,24 +489,24 @@ class DateTimeDiff extends DateTime
                 }
             }
 
-            if ($was && intval($dateTo->format("G")) - $hours <= 0)
+            if ($was && intval($dateTimeTo->format("G")) - $hours <= 0)
             {
                 switch (true)
                 {
-                    case intval($dateTo->format("G")) - $hours < 0:
-                    case intval($dateTo->format("i")) - $minutes < 0:
-                    case intval($dateTo->format("i")) - $minutes <= 0 && intval($dateTo->format("s")) - $seconds < 0:
+                    case intval($dateTimeTo->format("G")) - $hours < 0:
+                    case intval($dateTimeTo->format("i")) - $minutes < 0:
+                    case intval($dateTimeTo->format("i")) - $minutes <= 0 && intval($dateTimeTo->format("s")) - $seconds < 0:
                         $smart = "вчера";
                         break;
                 }
             }
-            elseif (!$was && intval($dateTo->format("G")) + $hours >= 23)
+            elseif (!$was && intval($dateTimeTo->format("G")) + $hours >= 23)
             {
                 switch (true)
                 {
-                    case intval($dateTo->format("G")) + $hours >= 24:
-                    case intval($dateTo->format("i")) + $minutes >= 60:
-                    case intval($dateTo->format("i")) + $minutes >= 59 && intval($dateTo->format("s")) + $seconds >= 60:
+                    case intval($dateTimeTo->format("G")) + $hours >= 24:
+                    case intval($dateTimeTo->format("i")) + $minutes >= 60:
+                    case intval($dateTimeTo->format("i")) + $minutes >= 59 && intval($dateTimeTo->format("s")) + $seconds >= 60:
                         $smart = "завтра";
                         break;
                 }
@@ -602,13 +539,13 @@ class DateTimeDiff extends DateTime
                     else
                         $smart = "вчера";
 
-                    if (intval($dateTo->format("G")) - $hours <= 0)
+                    if (intval($dateTimeTo->format("G")) - $hours <= 0)
                     {
                         switch (true)
                         {
-                            case intval($dateTo->format("G")) - $hours < 0:
-                            case intval($dateTo->format("i")) - $minutes < 0:
-                            case intval($dateTo->format("i")) - $minutes <= 0 && intval($dateTo->format("s")) - $seconds < 0:
+                            case intval($dateTimeTo->format("G")) - $hours < 0:
+                            case intval($dateTimeTo->format("i")) - $minutes < 0:
+                            case intval($dateTimeTo->format("i")) - $minutes <= 0 && intval($dateTimeTo->format("s")) - $seconds < 0:
                                 $smart = "позавчера";
                                 break;
                         }
@@ -621,12 +558,12 @@ class DateTimeDiff extends DateTime
                     else
                         $smart = "завтра";
 
-                    if (intval($dateTo->format("G")) + $hours >= 23)
+                    if (intval($dateTimeTo->format("G")) + $hours >= 23)
                     {
                         switch (true){
-                            case intval($dateTo->format("G")) + $hours >= 24:
-                            case intval($dateTo->format("i")) + $minutes >= 60:
-                            case intval($dateTo->format("i")) + $minutes >= 59 && intval($dateTo->format("s")) + $seconds >= 60:
+                            case intval($dateTimeTo->format("G")) + $hours >= 24:
+                            case intval($dateTimeTo->format("i")) + $minutes >= 60:
+                            case intval($dateTimeTo->format("i")) + $minutes >= 59 && intval($dateTimeTo->format("s")) + $seconds >= 60:
                                 $smart = "послезавтра";
                                 break;
                         }
@@ -645,7 +582,7 @@ class DateTimeDiff extends DateTime
 
             /**
              * Разница в 2 дня
-             */
+             * /
             if ($days == 2)
             {
                 if ($was && intval($dateTo->format("G")) + $hours <= 23)
@@ -669,8 +606,9 @@ class DateTimeDiff extends DateTime
                     }
                 }
             }
+            /**/
 
-            else if (in_array($days ,[7 ,14/*Кажется слишком сурово, я бы не понял,21*/]))
+            if (in_array($days ,[7 ,14/*Кажется слишком сурово, я бы не понял,21*/]))
             {
                 $smart = "неделю";
 
@@ -709,7 +647,7 @@ class DateTimeDiff extends DateTime
                         else
                             $smart = "{$this->getWill()}{$sp}$text";
                     }
-                    else if ($days > 17)
+                    else
                     {
                         if ($was)
                             $smart = "менее{$sp}2-x{$sp}месяцев{$sp}{$this->getPast()}";
@@ -749,11 +687,11 @@ class DateTimeDiff extends DateTime
                     else
                         $smart = "более{$sp}чем{$sp}{$this->getWill()}{$sp}год";
                 }
-                else if ($months >= 5 && $months <= 7)
+                else if ($months <= 7)
                 {
                     $text = "полтора{$sp}года";
                 }
-                else if ($months > 7)
+                else
                 {
                     if ($was)
                         $smart = "менее{$sp}2-х{$sp}лет{$sp}{$this->getPast()}";
@@ -911,9 +849,9 @@ class DateTimeDiff extends DateTime
      *
      * @param int $min Минимальное значение, после которого не будут браться другие значения, использовать константы
      *
-     * @return string|null
+     * @return null|string
      */
-    function getAllCounters ($min = 0)
+    function getAllCounters (int $min = 0) : null|string
     {
         $this->allCounters = null;
 
@@ -941,11 +879,19 @@ class DateTimeDiff extends DateTime
 
 
     /**
-     * @return \Parus\DateTime
+     * @deprcated
+     * @return self
      */
-    function getDateTo ()
+    function getDateTo () : self
     {
-        return $this->dateTo;
+        return $this->getDateTimeTo();
+    }
+
+
+    /** @return self */
+    function getDateTimeTo () : self
+    {
+        return $this->dateTimeTo;
     }
 
 
@@ -954,7 +900,7 @@ class DateTimeDiff extends DateTime
      *
      * @return string
      */
-    function getText ()
+    function getText () : string
     {
         return $this->text;
     }
@@ -965,7 +911,7 @@ class DateTimeDiff extends DateTime
      *
      * @return string
      */
-    function getTextWithDate ()
+    function getTextWithDate () : string
     {
         return $this->text . "," . Text::SPACE_NOBR . $this->dateString;
     }
@@ -976,27 +922,22 @@ class DateTimeDiff extends DateTime
      *
      * @return string
      */
-    function getSmart()
+    function getSmart() : string
     {
         return $this->smart;
     }
 
 
-    /**
-     * @return int
-     */
-    public
-    function getWas ()
+    /** @return int */
+    public function getWas () : int
     {
         return $this->was;
     }
 
 
-    /**
-     * @return \Parus\DateInterval
-     */
+    /** @return \Sept\Common\DateInterval */
     public
-    function getInterval ()
+    function getInterval () : DateInterval
     {
         return $this->interval;
     }
@@ -1006,7 +947,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getPunctuality ()
+    function getPunctuality () : int
     {
         return $this->punctuality;
     }
@@ -1016,7 +957,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getDateString ()
+    function getDateString () : string
     {
         return $this->dateString;
     }
@@ -1026,7 +967,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getMicros ()
+    function getMicros () : string
     {
         return $this->micros;
     }
@@ -1036,7 +977,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getSeconds ()
+    function getSeconds () : string
     {
         return $this->seconds;
     }
@@ -1046,7 +987,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getMinutes ()
+    function getMinutes () : string
     {
         return $this->minutes;
     }
@@ -1056,7 +997,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getHours ()
+    function getHours () : string
     {
         return $this->hours;
     }
@@ -1066,7 +1007,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getDays ()
+    function getDays () : string
     {
         return $this->days;
     }
@@ -1076,7 +1017,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getMonths ()
+    function getMonths () : string
     {
         return $this->months;
     }
@@ -1086,7 +1027,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getYears ()
+    function getYears () : string
     {
         return $this->years;
     }
@@ -1096,7 +1037,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getAges ()
+    function getAges () : string
     {
         return $this->ages;
     }
@@ -1106,7 +1047,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getMils ()
+    function getMils () : string
     {
         return $this->mils;
     }
@@ -1116,7 +1057,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalSeconds ()
+    function getTotalSeconds () : int
     {
         return $this->totalSeconds;
     }
@@ -1126,7 +1067,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalMinutes ()
+    function getTotalMinutes () : int
     {
         return $this->totalMinutes;
     }
@@ -1136,7 +1077,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalHours ()
+    function getTotalHours () : int
     {
         return $this->totalHours;
     }
@@ -1146,7 +1087,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalDays ()
+    function getTotalDays () : int
     {
         return $this->totalDays;
     }
@@ -1156,7 +1097,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalMonths ()
+    function getTotalMonths () : int
     {
         return $this->totalMonths;
     }
@@ -1166,7 +1107,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalYears ()
+    function getTotalYears () : int
     {
         return $this->totalYears;
     }
@@ -1176,7 +1117,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalAges ()
+    function getTotalAges () : int
     {
         return $this->totalAges;
     }
@@ -1186,7 +1127,7 @@ class DateTimeDiff extends DateTime
      * @return int
      */
     public
-    function getTotalMils ()
+    function getTotalMils () : int
     {
         return $this->totalMils;
     }
@@ -1196,7 +1137,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalSeconds ()
+    function getStrTotalSeconds () : string
     {
         return $this->strTotalSeconds;
     }
@@ -1206,7 +1147,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalMinutes ()
+    function getStrTotalMinutes () : string
     {
         return $this->strTotalMinutes;
     }
@@ -1216,7 +1157,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalHours ()
+    function getStrTotalHours () : string
     {
         return $this->strTotalHours;
     }
@@ -1226,7 +1167,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalDays ()
+    function getStrTotalDays () : string
     {
         return $this->strTotalDays;
     }
@@ -1236,7 +1177,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalMonths ()
+    function getStrTotalMonths () : string
     {
         return $this->strTotalMonths;
     }
@@ -1246,7 +1187,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalYears ()
+    function getStrTotalYears () : string
     {
         return $this->strTotalYears;
     }
@@ -1256,7 +1197,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalAges ()
+    function getStrTotalAges () : string
     {
         return $this->strTotalAges;
     }
@@ -1266,7 +1207,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getStrTotalMils ()
+    function getStrTotalMils () : string
     {
         return $this->strTotalMils;
     }
@@ -1276,7 +1217,7 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getPast ()
+    function getPast () : string
     {
         return $this->past;
     }
@@ -1286,17 +1227,17 @@ class DateTimeDiff extends DateTime
      * @return string
      */
     public
-    function getWill ()
+    function getWill () : string
     {
         return $this->will;
     }
 
 
     /**
-     * @return \string[]
+     * @return string[]
      */
     public
-    function getFields ()
+    function getFields () : array
     {
         return $this->fields;
     }

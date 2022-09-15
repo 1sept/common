@@ -33,7 +33,7 @@ class Date extends DateTime
      * @return string
      * @example 21.05.1984
      */
-    public function formatDigits ()
+    public function formatDigits () : string
     {
         return $this->format('d.m.Y');
     }
@@ -52,24 +52,29 @@ class Date extends DateTime
      * @example 5 января 1970 г.
      * @return string
      */
-    public function __toString ()
+    public function __toString () : string
     {
         return $this->format('j F Y г.');
     }
 
     /**
      * Сравнивает 2 даты (перед сравнением приводятся к одному часовому поясу)
-     * @param string|\DateTime|\Parus\DateTime|\Parus\Date $dateA          Дата А
-     * @param string|\DateTime|\Parus\DateTime|\Parus\Date $dateB          Дата Б
-     * @param null|\DateTimeZone                           $timeZone       Временная зона для сравнения (по умолчанию — временная зона $dateA)
-     * @param bool|string|\Exception                       $throwException Текст или исключение для дополнения текста исключений
+     * @param string|\DateTimeInterface $dateA     Дата А
+     * @param string|\DateTimeInterface $dateB     Дата Б
+     * @param null|string|\DateTimeZone $timeZone  Временная зона для сравнения (по умолчанию — временная зона $dateA)
+     * @param null|bool                 $withMicro Сравнивать с микросекундами
      *
      * @return integer
      * $dateA < $dateB returns < 0
      * $dateA = $dateB returns = 0
      * $dateA > $dateB returns > 0
      */
-    public static function compare ($dateA, $dateB, $timeZone = null, $throwException = "")
+    public static function compare (
+        string|\DateTimeInterface $dateA,
+        string|\DateTimeInterface $dateB,
+        null|string|\DateTimeZone $timeZone = null,
+        null|bool $withMicro = null
+    ) : int
     {
         // Проверка аргументов:
         parent::compare($dateA, $dateB, $timeZone);
@@ -91,14 +96,14 @@ class Date extends DateTime
 
         $dateB->setTimezone($timeZone);
 
-        return $dateA->format('Ymd') - $dateB->format('Ymd');
+        return (int) $dateA->format('Ymd') - $dateB->format('Ymd');
     }
 
     /**
      * Сконвертировать и получить объект DateTime (дата+время)
      * @return DateTime
      */
-    public function getDateTime ()
+    public function getDateTime () : DateTime
     {
         return DateTime::get($this, $this->getTimezone());
     }
@@ -107,7 +112,7 @@ class Date extends DateTime
      * Получить объект Date (только дата)
      * @return Date
      */
-    public function getDate ()
+    public function getDate () : static
     {
         return $this;
     }
