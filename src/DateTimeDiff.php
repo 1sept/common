@@ -464,15 +464,17 @@ class DateTimeDiff extends DateTime
         {
             $smart = "сегодня";
 
+            $text = $this->getHours();
+
             if ($hours == 1)
             {
-                $text = "час";
+                $smart = $this->getHours();
 
                 if ($minutes >= 29 && $minutes <= 31)
-                    $text = "полтора{$sp}часа";
+                    $smart = "полтора{$sp}часа";
 
                 else if ($minutes > 4)
-                    $text = "{$text}{$sp}и{$sp}{$this->getMinutes()}";
+                    $smart = "{$smart}{$sp}и{$sp}{$this->getMinutes()}";
 
                 if ($minutes >= 32)
                 {
@@ -484,7 +486,7 @@ class DateTimeDiff extends DateTime
             }
             else
             {
-                $text = $this->getHours();
+                $smart = $text = $this->getHours();
 
                 if ($minutes >= 45)
                     $text = preg_replace("/(^\d+)/" ,("\${1}" . '¾') ,$this->getHours());
