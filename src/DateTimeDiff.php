@@ -476,6 +476,11 @@ class DateTimeDiff extends DateTime
                 else if ($minutes > 4)
                     $smart = "{$smart}{$sp}и{$sp}{$this->getMinutes()}";
 
+                if ($was)
+                    $smart = "{$smart}{$sp}{$this->getPast()}";
+                else
+                    $smart = "{$this->getWill()}{$sp}{$smart}";
+
                 if ($minutes >= 32)
                 {
                     if ($was)
@@ -486,7 +491,7 @@ class DateTimeDiff extends DateTime
             }
             else
             {
-                $smart = $text = $this->getHours();
+                $text = $this->getHours();
 
                 if ($minutes >= 45)
                     $text = preg_replace("/(^\d+)/" ,("\${1}" . '¾') ,$this->getHours());
